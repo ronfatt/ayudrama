@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Home, PlaySquare, Search, Bookmark } from 'lucide-react';
+import { Home, PlaySquare, Search, Bookmark, User } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
   const { currentRoute, navigate, savedIds } = useApp();
@@ -22,6 +22,7 @@ export const BottomNav: React.FC = () => {
       icon: Bookmark,
       badge: savedIds.length > 0 ? savedIds.length : undefined,
     },
+    { label: 'Profil', path: '/profil', icon: User },
   ];
 
   const isActive = (path: string) => {
@@ -34,7 +35,7 @@ export const BottomNav: React.FC = () => {
       aria-label="Navigasi Bawah Mudah Alih"
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-ayu-bg/95 backdrop-blur-2xl border-t border-ayu-border/60 pb-safe shadow-[0_-8px_24px_rgba(0,0,0,0.6)]"
     >
-      <div className="grid grid-cols-4 h-16 max-w-md mx-auto items-center px-2">
+      <div className="grid grid-cols-5 h-16 max-w-md mx-auto items-center px-1">
         {items.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);

@@ -4,12 +4,14 @@ import { DRAMAS_DATA } from './data/dramas';
 import { Navbar } from './components/common/Navbar';
 import { BottomNav } from './components/common/BottomNav';
 import { Toast } from './components/common/Toast';
+import { TopUpModal } from './components/common/TopUpModal';
 import { UtamaPage } from './pages/UtamaPage';
 import { DramaPendekPage } from './pages/DramaPendekPage';
 import { FilemPage } from './pages/FilemPage';
 import { ButiranPage } from './pages/ButiranPage';
 import { CariPage } from './pages/CariPage';
 import { SenaraiSayaPage } from './pages/SenaraiSayaPage';
+import { ProfilPage } from './pages/ProfilPage';
 import { ShortDramaPlayer } from './components/player/ShortDramaPlayer';
 import { MoviePlayer } from './components/player/MoviePlayer';
 import { ShieldAlert } from 'lucide-react';
@@ -106,6 +108,9 @@ export const AppContent: React.FC = () => {
     if (currentRoute === '/senarai-saya') {
       return <SenaraiSayaPage />;
     }
+    if (currentRoute === '/profil') {
+      return <ProfilPage />;
+    }
 
     // Default: Utama (Home)
     return <UtamaPage />;
@@ -170,6 +175,12 @@ export const AppContent: React.FC = () => {
                   Senarai Saya
                 </button>
                 <button
+                  onClick={() => navigate('/profil')}
+                  className="hover:text-white transition-colors"
+                >
+                  Profil & Syiling
+                </button>
+                <button
                   onClick={() => navigate('/cari')}
                   className="hover:text-white transition-colors"
                 >
@@ -183,7 +194,7 @@ export const AppContent: React.FC = () => {
               <div className="flex items-center gap-2 text-center sm:text-left">
                 <ShieldAlert className="w-3.5 h-3.5 text-ayu-gold shrink-0" />
                 <span>
-                  Pratonton Rasmi MVP • Dikuasakan oleh Storan Tempatan (localStorage)
+                  Pratonton Rasmi MVP • Dikuasakan oleh Storan Tempatan (localStorage) & Sistem Dompet Syiling
                 </span>
               </div>
               <p className="flex items-center gap-1">
@@ -196,6 +207,9 @@ export const AppContent: React.FC = () => {
 
       {/* Mobile Bottom Navigation */}
       <BottomNav />
+
+      {/* Global Top Up Modal */}
+      <TopUpModal />
 
       {/* Global Toast Alert */}
       <Toast />

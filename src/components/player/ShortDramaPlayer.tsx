@@ -19,9 +19,15 @@ import {
   X,
   Clock,
   AlertTriangle,
-  PlayCircle
+  PlayCircle,
+  Lock,
+  Unlock,
+  Coins,
+  PlusCircle,
+  Flame,
 } from 'lucide-react';
 import { AyuBadge } from '../common/AyuBadge';
+import { EPISODE_UNLOCK_COST } from '../../data/packages';
 
 interface ShortDramaPlayerProps {
   drama: Drama;
@@ -40,9 +46,18 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
     saveWatchProgress,
     getDramaProgress,
     autoplayNext,
-    setAutoplayNext,
     showToast,
+    // Paywall & Coins
+    coinsBalance,
+    isEpisodeFree,
+    isEpisodeUnlocked,
+    getFreeEpisodeCount,
+    unlockEpisode,
+    unlockAllEpisodes,
+    openTopUp,
   } = useApp();
+
+  const freeCount = getFreeEpisodeCount(drama.totalEpisodes);
 
   // Find saved progress if initialEpisodeId is not explicitly given
   const savedProgress = getDramaProgress(drama.id);
@@ -79,7 +94,15 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
   const currentEpisode: Episode = drama.episodes[activeIndex] || drama.episodes[0];
   const isSavedItem = isSaved(drama.id);
 
-  // When changing episode index
+  // Check if current episode is unlocked (either within 30% free or purchased with coins)
+  const isCurrentUnlocked = isEpisodeUnlocked(
+    drama.id,
+    currentEpisode.id,
+    currentEpisode.episodeNumber,
+    drama.totalEpisodes
+  );
+
+  // When changing episode index or unlock state
   useEffect(() => {
     setIsLoading(true);
     setHasError(false);
@@ -87,24 +110,25 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
     setDuration(0);
     setShowNextCountdown(null);
 
-    // Stop and reset previous video
+    // Stop previous video
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
-      if (currentEpisode.status === 'available' && currentEpisode.videoUrl) {
+      if (isCurrentUnlocked && currentEpisode.status === 'available' && currentEpisode.videoUrl) {
         videoRef.current.load();
         const playPromise = videoRef.current.play();
         if (playPromise !== undefined) {
           playPromise
             .then(() => setIsPlaying(true))
             .catch(() => {
-              // Browser blocked unmuted autoplay, mute and retry or show tap
               setIsPlaying(false);
             });
         }
+      } else {
+        setIsPlaying(false);
       }
     }
-  }, [activeIndex]);
+  }, [activeIndex, isCurrentUnlocked]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -114,7 +138,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
       switch (e.code) {
         case 'Space':
           e.preventDefault();
-          togglePlay();
+          if (isCurrentUnlocked) togglePlay();
           break;
         case 'ArrowUp':
           e.preventDefault();
@@ -144,17 +168,16 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeIndex, isPlaying, isMuted, isFullscreen, isEpisodeDrawerOpen]);
+  }, [activeIndex, isPlaying, isMuted, isFullscreen, isEpisodeDrawerOpen, isCurrentUnlocked]);
 
-  // Track progress and update context periodically
+  // Track progress
   const handleTimeUpdate = () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !isCurrentUnlocked) return;
     const curr = videoRef.current.currentTime;
     const dur = videoRef.current.duration || 0;
     setCurrentTime(curr);
     setDuration(dur);
 
-    // Save every 3 seconds of progress
     if (Math.floor(curr) % 3 === 0 && dur > 0) {
       saveWatchProgress(drama.id, currentEpisode.id, currentEpisode.episodeNumber, curr, dur);
     }
@@ -178,7 +201,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
     }
   };
 
-  // Autoplay countdown timer
+  // Autoplay countdown
   useEffect(() => {
     if (showNextCountdown === null) return;
     if (showNextCountdown <= 0) {
@@ -193,7 +216,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
   }, [showNextCountdown]);
 
   const togglePlay = () => {
-    if (!videoRef.current || currentEpisode.status !== 'available') return;
+    if (!videoRef.current || !isCurrentUnlocked || currentEpisode.status !== 'available') return;
     if (videoRef.current.paused) {
       videoRef.current.play();
       setIsPlaying(true);
@@ -251,7 +274,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
     }
   };
 
-  // Touch Swipe Gesture for Mobile
+  // Touch gestures
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
   };
@@ -259,20 +282,17 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
   const handleTouchEnd = (e: React.TouchEvent) => {
     const touchEndY = e.changedTouches[0].clientY;
     const diff = touchStartY.current - touchEndY;
-    // Swipe Up -> Next Episode
     if (diff > 55) {
       goToNextEpisode();
-    }
-    // Swipe Down -> Prev Episode
-    else if (diff < -55) {
+    } else if (diff < -55) {
       goToPrevEpisode();
     }
   };
 
-  // Wheel Gesture for Desktop
+  // Desktop wheel
   const handleWheel = (e: React.WheelEvent) => {
     const now = Date.now();
-    if (now - lastWheelTime.current < 700) return; // Debounce wheel
+    if (now - lastWheelTime.current < 700) return;
     if (e.deltaY > 60) {
       lastWheelTime.current = now;
       goToNextEpisode();
@@ -282,7 +302,6 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
     }
   };
 
-  // Handle Seekbar
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!videoRef.current || duration <= 0) return;
     const target = parseFloat(e.target.value);
@@ -322,12 +341,99 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
           onTouchEnd={handleTouchEnd}
           className="relative w-full h-full lg:h-[88vh] lg:max-h-[880px] lg:w-auto lg:aspect-[9/16] bg-ayu-card lg:rounded-3xl overflow-hidden shadow-2xl lg:border lg:border-white/10 flex flex-col justify-between"
         >
-          {/* Video Element or Coming Soon Overlay */}
+          {/* Main Video or Locked Paywall Screen */}
           <div
-            onClick={togglePlay}
+            onClick={isCurrentUnlocked ? togglePlay : undefined}
             className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black"
           >
-            {currentEpisode.status === 'available' ? (
+            {/* 1. If Locked: Render 30% Paywall Lock Screen */}
+            {!isCurrentUnlocked ? (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="absolute inset-0 bg-gradient-to-b from-ayu-surface/95 via-ayu-card to-ayu-bg p-6 flex flex-col items-center justify-center text-center z-30 animate-fade-in"
+              >
+                {/* Lock Badge & Icon */}
+                <div className="w-16 h-16 rounded-3xl bg-ayu-coral/10 border-2 border-ayu-coral/40 flex items-center justify-center text-ayu-coral mb-4 shadow-xl shadow-ayu-coral/20 animate-pulse">
+                  <Lock className="w-8 h-8" />
+                </div>
+
+                <div className="flex items-center gap-2 mb-2">
+                  <AyuBadge variant="coral" size="sm">
+                    EPISOD TERKUNCI
+                  </AyuBadge>
+                  <span className="text-xs text-ayu-gold-light font-bold">
+                    30% Percuma Selesai
+                  </span>
+                </div>
+
+                <h3 className="text-lg font-extrabold text-white mb-1">
+                  {currentEpisode.title}
+                </h3>
+
+                <p className="text-xs text-ayu-text-muted max-w-xs mb-4 leading-relaxed">
+                  Episod 1 hingga {freeCount} telah dinikmati secara percuma. Buka episod ini untuk meneruskan debaran cerita!
+                </p>
+
+                {/* Coin Price & Balance Info */}
+                <div className="bg-ayu-surface/80 border border-ayu-border/70 rounded-2xl p-3 w-full max-w-xs mb-4 flex items-center justify-between">
+                  <div className="text-left">
+                    <span className="text-[10px] text-ayu-text-subtle uppercase tracking-wider block">
+                      Harga Tebusan
+                    </span>
+                    <span className="text-sm font-bold text-white flex items-center gap-1 mt-0.5">
+                      <Coins className="w-4 h-4 text-ayu-gold-light fill-current" />
+                      {EPISODE_UNLOCK_COST} Syiling
+                    </span>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-[10px] text-ayu-text-subtle uppercase tracking-wider block">
+                      Baki Anda
+                    </span>
+                    <span
+                      className={`text-sm font-extrabold flex items-center gap-1 mt-0.5 ${
+                        coinsBalance >= EPISODE_UNLOCK_COST
+                          ? 'text-emerald-400'
+                          : 'text-rose-400'
+                      }`}
+                    >
+                      {coinsBalance} Syiling
+                    </span>
+                  </div>
+                </div>
+
+                {/* Unlock CTA Buttons */}
+                <div className="w-full max-w-xs space-y-2">
+                  {coinsBalance >= EPISODE_UNLOCK_COST ? (
+                    <button
+                      onClick={() => unlockEpisode(drama, currentEpisode)}
+                      className="w-full py-3 rounded-xl bg-ayu-coral hover:bg-ayu-coral-hover text-white text-xs font-bold shadow-lg shadow-ayu-coral/30 flex items-center justify-center gap-2 transition-all active:scale-95"
+                    >
+                      <Unlock className="w-4 h-4" />
+                      <span>Buka Episod Sekarang (-{EPISODE_UNLOCK_COST} Syiling)</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={openTopUp}
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-ayu-coral to-amber-500 hover:opacity-90 text-white text-xs font-bold shadow-lg shadow-ayu-coral/30 flex items-center justify-center gap-2 transition-all active:scale-95"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      <span>Tambah Nilai (Baki Tidak Mencukupi)</span>
+                    </button>
+                  )}
+
+                  {/* Bundle Unlock Option */}
+                  <button
+                    onClick={() => unlockAllEpisodes(drama)}
+                    className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-ayu-gold-light text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Flame className="w-3.5 h-3.5 text-ayu-gold" />
+                    <span>Buka Pakej Siri Lengkap (Jimat 20%)</span>
+                  </button>
+                </div>
+              </div>
+            ) : currentEpisode.status === 'available' ? (
+              /* 2. Unlocked & Available: Video Player */
               <>
                 <video
                   ref={videoRef}
@@ -389,7 +495,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                   </div>
                 )}
 
-                {/* Animated Center Play/Pause Ripple */}
+                {/* Center Ripple */}
                 {showCenterIcon && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                     <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white scale-125 animate-fade-in shadow-2xl">
@@ -402,7 +508,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                   </div>
                 )}
 
-                {/* Autoplay Next Episode Countdown Pill */}
+                {/* Autoplay Countdown Pill */}
                 {showNextCountdown !== null && (
                   <div
                     onClick={(e) => e.stopPropagation()}
@@ -431,7 +537,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                 )}
               </>
             ) : (
-              /* Coming Soon Placeholder */
+              /* 3. Coming Soon */
               <div
                 onClick={(e) => e.stopPropagation()}
                 className="absolute inset-0 bg-gradient-to-b from-ayu-surface via-ayu-card to-ayu-bg flex flex-col items-center justify-center p-6 text-center z-10"
@@ -446,7 +552,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                   {currentEpisode.title}
                 </h3>
                 <p className="text-xs text-ayu-text-muted max-w-xs mb-5 leading-relaxed">
-                  {currentEpisode.synopsis || 'Episod ini sedang dalam proses penyuntingan akhir audio visual berkualiti tinggi.'}
+                  {currentEpisode.synopsis || 'Episod ini sedang dalam proses penyuntingan akhir audio visual.'}
                 </p>
                 <button
                   onClick={() => showToast('Anda akan dimaklumkan sebaik sahaja episod ini ditayangkan!', 'success')}
@@ -459,7 +565,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
           </div>
 
           {/* ==================== PLAYER TOP BAR ==================== */}
-          <div className="relative z-20 pt-safe px-3 sm:px-4 py-3 bg-gradient-to-b from-black/80 via-black/40 to-transparent flex items-center justify-between text-white">
+          <div className="relative z-20 pt-safe px-3 sm:px-4 py-3 bg-gradient-to-b from-black/85 via-black/40 to-transparent flex items-center justify-between text-white">
             <button
               onClick={onBack}
               aria-label="Kembali"
@@ -469,44 +575,41 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
             </button>
 
             {/* Drama Title Pill */}
-            <div className="flex flex-col items-center max-w-[200px]">
+            <div className="flex flex-col items-center max-w-[170px] xs:max-w-[200px]">
               <span className="text-xs font-bold text-white truncate drop-shadow">
                 {drama.title}
               </span>
-              <span className="text-[10px] text-ayu-gold-light font-medium tracking-wide">
-                Episod {currentEpisode.episodeNumber} / {drama.totalEpisodes}
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] text-ayu-gold-light font-medium">
+                  Episod {currentEpisode.episodeNumber} / {drama.totalEpisodes}
+                </span>
+                {isEpisodeFree(currentEpisode.episodeNumber, drama.totalEpisodes) && (
+                  <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.2 rounded-full font-bold">
+                    Percuma
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Right actions: Mute & Autoplay toggle */}
+            {/* Right actions: Coin Wallet & Mute & Autoplay */}
             <div className="flex items-center gap-1.5">
+              {/* Coin Balance Pill */}
+              <button
+                onClick={openTopUp}
+                aria-label="Buka baki syiling"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-ayu-card/80 hover:bg-ayu-card border border-ayu-gold/40 text-[11px] font-bold text-ayu-gold-light backdrop-blur-md transition-colors"
+              >
+                <Coins className="w-3.5 h-3.5 fill-current" />
+                <span>{coinsBalance}</span>
+                <PlusCircle className="w-3 h-3 text-ayu-coral ml-0.5" />
+              </button>
+
               <button
                 onClick={toggleMute}
                 aria-label={isMuted ? 'Buka bunyi' : 'Matikan bunyi'}
                 className="p-2 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md text-white transition-colors"
               >
                 {isMuted ? <VolumeX className="w-4 h-4 text-ayu-coral" /> : <Volume2 className="w-4 h-4" />}
-              </button>
-
-              <button
-                onClick={() => {
-                  setAutoplayNext((prev) => !prev);
-                  showToast(
-                    !autoplayNext
-                      ? 'Auto-sambung episod diaktifkan'
-                      : 'Auto-sambung episod dimatikan',
-                    'info'
-                  );
-                }}
-                title={autoplayNext ? 'Auto-main: BUKA' : 'Auto-main: TUTUP'}
-                aria-label="Togol auto main"
-                className={`px-2 py-1 rounded-full text-[10px] font-bold backdrop-blur-md border transition-colors ${
-                  autoplayNext
-                    ? 'bg-ayu-coral/80 border-ayu-coral text-white'
-                    : 'bg-black/40 border-white/20 text-white/60'
-                }`}
-              >
-                Auto
               </button>
 
               <button
@@ -519,7 +622,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
             </div>
           </div>
 
-          {/* ==================== RIGHT FLOATING ACTIONS (Hongguo/TikTok style) ==================== */}
+          {/* ==================== RIGHT FLOATING ACTIONS ==================== */}
           <div className="absolute right-2.5 bottom-24 z-20 flex flex-col items-center gap-4 text-white">
             {/* Like Button */}
             <button
@@ -541,7 +644,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
               </span>
             </button>
 
-            {/* Bookmark / Save to List */}
+            {/* Bookmark */}
             <button
               onClick={() => toggleSave(drama.id)}
               aria-label={isSavedItem ? 'Keluarkan dari Senarai' : 'Simpan drama'}
@@ -575,7 +678,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
               </span>
             </button>
 
-            {/* Up / Down Episode Switchers (Desktop & Mobile accessible) */}
+            {/* Up / Down Switchers */}
             <div className="flex flex-col gap-1.5 pt-2">
               <button
                 onClick={goToPrevEpisode}
@@ -604,18 +707,25 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
             </div>
           </div>
 
-          {/* ==================== BOTTOM INFO OVERLAY & SEEKBAR ==================== */}
+          {/* ==================== BOTTOM INFO & SEEKBAR ==================== */}
           <div className="relative z-20 pb-safe px-4 py-3 bg-gradient-to-t from-black via-black/80 to-transparent text-white">
-            {/* Title & Short Synopsis snippet */}
             <div className="pr-14 mb-2">
               <div className="flex items-center gap-2 mb-1">
                 <h2 className="text-sm font-bold text-white drop-shadow line-clamp-1">
                   {currentEpisode.title}
                 </h2>
-                {currentEpisode.status === 'coming_soon' && (
-                  <AyuBadge variant="gold" size="sm">
-                    Akan Datang
-                  </AyuBadge>
+                {isEpisodeFree(currentEpisode.episodeNumber, drama.totalEpisodes) ? (
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-md border border-emerald-500/30">
+                    Percuma
+                  </span>
+                ) : !isCurrentUnlocked ? (
+                  <span className="text-[10px] bg-ayu-coral/20 text-ayu-coral font-bold px-2 py-0.5 rounded-md border border-ayu-coral/40 flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> Terkunci
+                  </span>
+                ) : (
+                  <span className="text-[10px] bg-white/10 text-white/90 font-bold px-2 py-0.5 rounded-md">
+                    Dibuka
+                  </span>
                 )}
               </div>
               <p className="text-[11px] text-ayu-text-muted leading-tight line-clamp-2">
@@ -623,20 +733,18 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
               </p>
             </div>
 
-            {/* Seekbar and Time Display */}
-            {currentEpisode.status === 'available' && (
+            {/* Seekbar if unlocked */}
+            {isCurrentUnlocked && currentEpisode.status === 'available' && (
               <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="range"
-                    min={0}
-                    max={duration || 100}
-                    value={currentTime}
-                    onChange={handleSeek}
-                    aria-label="Kemajuan video"
-                    className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-ayu-coral"
-                  />
-                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={duration || 100}
+                  value={currentTime}
+                  onChange={handleSeek}
+                  aria-label="Kemajuan video"
+                  className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-ayu-coral"
+                />
                 <div className="flex items-center justify-between text-[10px] text-ayu-text-subtle font-mono">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
@@ -645,7 +753,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
             )}
           </div>
 
-          {/* ==================== SLIDING EPISODE DRAWER (Mobile & Overlay) ==================== */}
+          {/* ==================== SLIDING EPISODE DRAWER ==================== */}
           {isEpisodeDrawerOpen && (
             <div
               className="absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex flex-col justify-end animate-fade-in"
@@ -655,14 +763,17 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                 className="bg-ayu-card border-t border-ayu-border rounded-t-3xl p-5 max-h-[75vh] flex flex-col animate-slide-up"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Drawer Header */}
+                {/* Header with 30% indicator */}
                 <div className="flex items-center justify-between pb-3 border-b border-ayu-border/60">
                   <div className="flex items-center gap-2">
                     <ListVideo className="w-5 h-5 text-ayu-coral" />
                     <div>
                       <h4 className="text-sm font-bold text-white">Pilih Episod</h4>
                       <p className="text-[11px] text-ayu-text-muted">
-                        Jumlah {drama.episodes.length} Episod
+                        Jumlah {drama.episodes.length} Episod •{' '}
+                        <span className="text-emerald-400 font-bold">
+                          Ep 1-{freeCount} Percuma
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -675,11 +786,12 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                   </button>
                 </div>
 
-                {/* Episodes Scrollable List */}
+                {/* Episodes List with Lock/Free badges */}
                 <div className="overflow-y-auto custom-scrollbar divide-y divide-ayu-border/30 py-2">
                   {drama.episodes.map((ep, idx) => {
                     const isCurrent = idx === activeIndex;
-                    const isAvailable = ep.status === 'available';
+                    const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
+                    const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
 
                     return (
                       <button
@@ -698,9 +810,9 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                           className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
                             isCurrent
                               ? 'bg-ayu-coral text-white'
-                              : isAvailable
+                              : isFree || isUnlocked
                               ? 'bg-ayu-surface text-ayu-text-muted'
-                              : 'bg-ayu-muted/40 text-ayu-text-subtle'
+                              : 'bg-ayu-muted/60 text-ayu-text-subtle'
                           }`}
                         >
                           {ep.episodeNumber}
@@ -715,14 +827,19 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                             >
                               {ep.title}
                             </span>
-                            {isAvailable ? (
-                              <span className="text-[10px] font-mono text-ayu-text-subtle shrink-0">
-                                {ep.duration}
+
+                            {isFree ? (
+                              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded shrink-0">
+                                Percuma
+                              </span>
+                            ) : isUnlocked ? (
+                              <span className="text-[10px] text-sky-400 font-bold bg-sky-500/10 px-1.5 py-0.5 rounded shrink-0 flex items-center gap-0.5">
+                                <Unlock className="w-2.5 h-2.5" /> Dibuka
                               </span>
                             ) : (
-                              <AyuBadge variant="gold" size="sm">
-                                Akan Datang
-                              </AyuBadge>
+                              <span className="text-[10px] text-ayu-gold-light font-bold bg-ayu-gold/10 px-1.5 py-0.5 rounded shrink-0 flex items-center gap-1">
+                                <Lock className="w-2.5 h-2.5" /> 50 Syiling
+                              </span>
                             )}
                           </div>
                           <p className="text-[11px] text-ayu-text-muted truncate mt-0.5">
@@ -742,32 +859,43 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
         <div className="hidden lg:flex flex-col w-[380px] xl:w-[420px] h-[88vh] max-h-[880px] bg-ayu-card/90 border border-ayu-border/60 rounded-3xl p-6 overflow-hidden shadow-2xl backdrop-blur-xl">
           {/* Header */}
           <div className="pb-4 border-b border-ayu-border/60">
-            <div className="flex items-center gap-2 mb-2">
-              {drama.isAyuOriginal && (
-                <AyuBadge variant="coral" size="sm">
-                  <Sparkles className="w-3 h-3" />
-                  AYU ORIGINAL
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2">
+                {drama.isAyuOriginal && (
+                  <AyuBadge variant="coral" size="sm">
+                    <Sparkles className="w-3 h-3" />
+                    ORIGINAL
+                  </AyuBadge>
+                )}
+                <AyuBadge variant="dark" size="sm">
+                  {drama.rating}
                 </AyuBadge>
-              )}
-              <AyuBadge variant="dark" size="sm">
-                {drama.rating}
-              </AyuBadge>
-              <span className="text-xs text-ayu-text-muted font-medium">{drama.year}</span>
+              </div>
+
+              {/* Wallet In Companion Header */}
+              <button
+                onClick={openTopUp}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-ayu-surface hover:bg-ayu-card border border-ayu-gold/40 text-xs font-bold text-ayu-gold-light transition-all"
+              >
+                <Coins className="w-3.5 h-3.5 fill-current" />
+                <span>{coinsBalance} Syiling</span>
+                <PlusCircle className="w-3.5 h-3.5 text-ayu-coral ml-0.5" />
+              </button>
             </div>
 
             <h2 className="text-xl font-bold text-white">{drama.title}</h2>
             <p className="text-xs text-ayu-gold-light mt-0.5 italic">"{drama.tagline}"</p>
           </div>
 
-          {/* Synopsis */}
-          <div className="py-3 border-b border-ayu-border/40">
-            <p className="text-xs text-ayu-text-muted leading-relaxed line-clamp-3">
-              {drama.synopsis}
-            </p>
-            <div className="flex items-center gap-2 mt-2 text-[11px] text-ayu-text-subtle">
-              <span>Pelakon:</span>
-              <span className="text-ayu-text-muted">{drama.cast.join(', ')}</span>
-            </div>
+          {/* 30% Free Policy Notice */}
+          <div className="py-2.5 border-b border-ayu-border/40 text-xs text-ayu-text-muted flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span>Ep 1 hingga {freeCount} adalah percuma</span>
+            </span>
+            <span className="text-ayu-text-subtle text-[11px]">
+              Ep {freeCount + 1}+: 50 Syiling
+            </span>
           </div>
 
           {/* Episodes List in Desktop Panel */}
@@ -777,14 +905,15 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                 Senarai Episod ({drama.episodes.length})
               </span>
               <span className="text-[11px] text-ayu-coral font-medium">
-                Sedang Dimainkan: Ep {currentEpisode.episodeNumber}
+                Sedang Dipilih: Ep {currentEpisode.episodeNumber}
               </span>
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
               {drama.episodes.map((ep, idx) => {
                 const isCurrent = idx === activeIndex;
-                const isAvailable = ep.status === 'available';
+                const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
+                const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
 
                 return (
                   <button
@@ -800,9 +929,9 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                       className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${
                         isCurrent
                           ? 'bg-ayu-coral text-white'
-                          : isAvailable
+                          : isFree || isUnlocked
                           ? 'bg-ayu-card text-ayu-text-muted'
-                          : 'bg-ayu-muted/40 text-ayu-text-subtle'
+                          : 'bg-ayu-muted/60 text-ayu-text-subtle'
                       }`}
                     >
                       {ep.episodeNumber}
@@ -813,14 +942,19 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                         <span className="text-xs font-bold truncate">
                           {ep.title}
                         </span>
-                        {isAvailable ? (
-                          <span className="text-[10px] font-mono text-ayu-text-subtle">
-                            {ep.duration}
+
+                        {isFree ? (
+                          <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                            Percuma
+                          </span>
+                        ) : isUnlocked ? (
+                          <span className="text-[10px] text-sky-400 font-bold bg-sky-500/10 px-1.5 py-0.5 rounded flex items-center gap-1">
+                            <Unlock className="w-2.5 h-2.5" /> Dibuka
                           </span>
                         ) : (
-                          <AyuBadge variant="gold" size="sm">
-                            Akan Datang
-                          </AyuBadge>
+                          <span className="text-[10px] text-ayu-gold-light font-bold bg-ayu-gold/10 px-1.5 py-0.5 rounded flex items-center gap-1">
+                            <Lock className="w-2.5 h-2.5" /> 50 Syiling
+                          </span>
                         )}
                       </div>
                       <p className="text-[11px] text-ayu-text-muted line-clamp-1 mt-0.5">
@@ -834,24 +968,24 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
           </div>
 
           {/* Desktop Keyboard Shortcuts Tip */}
-          <div className="mt-4 pt-3 border-t border-ayu-border/40 flex items-center justify-between text-[11px] text-ayu-text-subtle">
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-mono">
+          <div className="mt-3 pt-3 border-t border-ayu-border/40 flex items-center justify-between text-[11px] text-ayu-text-subtle">
+            <span>
+              <kbd className="px-1 py-0.5 bg-white/5 border border-white/10 rounded font-mono">
                 ↑
               </kbd>
-              <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-mono">
+              <kbd className="px-1 py-0.5 bg-white/5 border border-white/10 rounded font-mono ml-0.5">
                 ↓
               </kbd>{' '}
-              Tukar Episod
+              Episod
             </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-mono">
+            <span>
+              <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded font-mono">
                 Spasi
               </kbd>{' '}
               Main/Jeda
             </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-mono">
+            <span>
+              <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded font-mono">
                 M
               </kbd>{' '}
               Bunyi

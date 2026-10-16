@@ -49,3 +49,31 @@ export interface WatchProgress {
   totalSeconds: number;
   updatedAt: number;
 }
+
+export interface CoinTransaction {
+  id: string;
+  type: 'recharge' | 'unlock_episode' | 'unlock_bundle' | 'bonus';
+  amount: number; // positive for recharge/bonus, negative for unlock
+  title: string;
+  description: string;
+  timestamp: number;
+  paymentMethod?: string;
+}
+
+export interface TopUpPackage {
+  id: string;
+  priceRM: number;
+  coins: number;
+  bonusCoins: number;
+  tag?: string;
+  isPopular?: boolean;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  memberTier: 'Ahli Biasa' | 'VIP Ayu' | 'VIP Premium';
+  joinDate: string;
+}

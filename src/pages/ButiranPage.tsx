@@ -10,6 +10,8 @@ import {
   Clock,
   CheckCircle2,
   Share2,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import { AyuBadge } from '../components/common/AyuBadge';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
@@ -20,7 +22,16 @@ interface ButiranPageProps {
 }
 
 export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
-  const { navigate, isSaved, toggleSave, getDramaProgress, showToast } = useApp();
+  const {
+    navigate,
+    isSaved,
+    toggleSave,
+    getDramaProgress,
+    showToast,
+    isEpisodeFree,
+    isEpisodeUnlocked,
+    getFreeEpisodeCount,
+  } = useApp();
 
   const drama = DRAMAS_DATA.find((d) => d.slug === slug);
 
@@ -206,7 +217,7 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
 
         {/* ==================== EPISODES LIST ==================== */}
         <div className="mt-12 pt-8 border-t border-ayu-border/60">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-white">
                 {drama.format === 'movie' ? 'Tayangan Filem' : 'Semua Episod'}
@@ -217,6 +228,15 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
                   : `Jumlah ${drama.episodes.length} episod disediakan`}
               </p>
             </div>
+
+            {drama.format === 'short_drama' && (
+              <div className="flex items-center gap-2 text-xs bg-ayu-card border border-ayu-border/60 px-3 py-1.5 rounded-xl self-start sm:self-auto">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span className="text-white font-medium">
+                  Ep 1-{getFreeEpisodeCount(drama.totalEpisodes)} Percuma (30% Siri)
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -224,6 +244,8 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
               const isWatched = progress && progress.episodeNumber >= ep.episodeNumber;
               const isCurrent = progress && progress.episodeId === ep.id;
               const isAvailable = ep.status === 'available';
+              const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
+              const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
 
               return (
                 <div
@@ -269,15 +291,32 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
                       <span className="text-xs font-bold text-white truncate">
                         {ep.title}
                       </span>
-                      {isAvailable ? (
-                        <span className="text-[10px] font-mono text-ayu-text-subtle shrink-0">
-                          {ep.duration}
-                        </span>
-                      ) : (
-                        <AyuBadge variant="gold" size="sm">
-                          Akan Datang
-                        </AyuBadge>
-                      )}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {isAvailable && drama.format === 'short_drama' && (
+                          isFree ? (
+                            <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                              Percuma
+                            </span>
+                          ) : isUnlocked ? (
+                            <span className="text-[10px] text-sky-400 font-bold bg-sky-500/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                              <Unlock className="w-2.5 h-2.5" /> Dibuka
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-ayu-gold-light font-bold bg-ayu-gold/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                              <Lock className="w-2.5 h-2.5" /> 50 Syiling
+                            </span>
+                          )
+                        )}
+                        {isAvailable ? (
+                          <span className="text-[10px] font-mono text-ayu-text-subtle">
+                            {ep.duration}
+                          </span>
+                        ) : (
+                          <AyuBadge variant="gold" size="sm">
+                            Akan Datang
+                          </AyuBadge>
+                        )}
+                      </div>
                     </div>
 
                     <p className="text-[11px] text-ayu-text-muted line-clamp-2 mt-1">
