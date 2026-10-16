@@ -41,7 +41,7 @@ export const CariPage: React.FC = () => {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Cari contoh: Janji, Cinta, Misteri, Chow Kit..."
+            placeholder="Cari contoh: Sheriff, Daddyku Gangster, Harum Malam, Janji..."
             autoFocus
             aria-label="Kotak carian drama dan filem"
             className="w-full bg-ayu-card border border-ayu-border focus:border-ayu-coral text-white placeholder-ayu-text-subtle text-sm sm:text-base rounded-2xl pl-12 pr-12 py-3.5 outline-none transition-colors shadow-xl"

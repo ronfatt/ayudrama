@@ -94,10 +94,10 @@ export const UtamaPage: React.FC = () => {
           aspect="9/16"
         />
 
-        {/* Filem Popular */}
+        {/* Koleksi Filem D'Ayu Pictures */}
         <ContentRow
-          title="Filem & Sinema Pilihan"
-          subtitle="Naskhah layar perak dengan kualiti sinematik 16:9"
+          title="Koleksi Filem Rasmi D'Ayu Pictures"
+          subtitle="Naskhah layar perak terhebat termasuk Sheriff, Daddyku Gangster & Harum Malam"
           dramas={filemDramas}
           progressMap={watchHistory}
           aspect="16/9"
