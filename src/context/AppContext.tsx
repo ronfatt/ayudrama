@@ -44,6 +44,14 @@ interface AppContextType {
   openTopUp: () => void;
   closeTopUp: () => void;
 
+  // 5-Second Ad Modal & Rewards (d.ayupictures.com)
+  isAdModalOpen: boolean;
+  adRewardType: 'coins' | 'unlock_episode';
+  targetEpisodeToUnlock: { drama: Drama; episode: Episode } | null;
+  openAdModal: (options?: { rewardType?: 'coins' | 'unlock_episode'; drama?: Drama; episode?: Episode }) => void;
+  closeAdModal: () => void;
+  completeAdReward: () => void;
+
   // Settings
   autoplayNext: boolean;
   setAutoplayNext: (val: boolean | ((prev: boolean) => boolean)) => void;
@@ -148,6 +156,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Top Up Modal open state
   const [isTopUpOpen, setIsTopUpOpen] = useState<boolean>(false);
+
+  // 5-Second Rewarded Ad Modal State (d.ayupictures.com)
+  const [isAdModalOpen, setIsAdModalOpen] = useState<boolean>(false);
+  const [adRewardType, setAdRewardType] = useState<'coins' | 'unlock_episode'>('coins');
+  const [targetEpisodeToUnlock, setTargetEpisodeToUnlock] = useState<{ drama: Drama; episode: Episode } | null>(null);
 
   // Autoplay
   const [autoplayNext, setAutoplayNext] = useState<boolean>(() => {
@@ -446,6 +459,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast(`Tahniah! Anda menerima +${bonus} Ayu Syiling percuma.`, 'success');
   };
 
+  // 5-Second Rewarded Ad Handlers (https://d.ayupictures.com)
+  const openAdModal = (options?: {
+    rewardType?: 'coins' | 'unlock_episode';
+    drama?: Drama;
+    episode?: Episode;
+  }) => {
+    setAdRewardType(options?.rewardType || 'coins');
+    setTargetEpisodeToUnlock(
+      options?.drama && options?.episode
+        ? { drama: options.drama, episode: options.episode }
+        : null
+    );
+    setIsAdModalOpen(true);
+  };
+
+  const closeAdModal = () => {
+    setIsAdModalOpen(false);
+  };
+
+  const completeAdReward = () => {
+    if (adRewardType === 'unlock_episode' && targetEpisodeToUnlock) {
+      const { drama, episode } = targetEpisodeToUnlock;
+      const unlockKey = `${drama.id}:${episode.id}`;
+      if (!unlockedEpisodes.includes(unlockKey)) {
+        setUnlockedEpisodes((prev) => [...prev, unlockKey]);
+        const newTx: CoinTransaction = {
+          id: `tx-ad-${Date.now()}`,
+          type: 'ad_reward',
+          amount: 0,
+          title: `Buka Episod ${episode.episodeNumber} (Tonton Iklan)`,
+          description: `Episod ${episode.title} dibuka percuma selepas menonton iklan 5 saat D'Ayu Pictures (d.ayupictures.com).`,
+          timestamp: Date.now(),
+        };
+        setTransactions((prev) => [newTx, ...prev]);
+        showToast(
+          `Tahniah! Episod ${episode.episodeNumber} berjaya dibuka percuma selepas menonton iklan D'Ayu Pictures!`,
+          'success'
+        );
+      }
+    } else {
+      // Default: reward coins (+50 Ayu Syiling)
+      const rewardCoins = 50;
+      setCoinsBalance((prev) => prev + rewardCoins);
+      const newTx: CoinTransaction = {
+        id: `tx-ad-${Date.now()}`,
+        type: 'ad_reward',
+        amount: rewardCoins,
+        title: "Ganjaran Iklan D'Ayu Pictures",
+        description: 'Menerima 50 Ayu Syiling percuma dengan menonton iklan 5 saat di d.ayupictures.com.',
+        timestamp: Date.now(),
+      };
+      setTransactions((prev) => [newTx, ...prev]);
+      showToast(
+        `Tahniah! Anda menerima +${rewardCoins} Ayu Syiling percuma selepas menonton iklan!`,
+        'success'
+      );
+    }
+    setIsAdModalOpen(false);
+  };
+
   // Parse route parameters
   const parseParams = () => {
     const parts = currentRoute.split('/').filter(Boolean);
@@ -502,6 +575,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isTopUpOpen,
         openTopUp: () => setIsTopUpOpen(true),
         closeTopUp: () => setIsTopUpOpen(false),
+
+        // 5-Second Ad Modal & Rewards
+        isAdModalOpen,
+        adRewardType,
+        targetEpisodeToUnlock,
+        openAdModal,
+        closeAdModal,
+        completeAdReward,
 
         autoplayNext,
         setAutoplayNext,

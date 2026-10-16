@@ -17,6 +17,7 @@ import {
   Play,
 } from 'lucide-react';
 import { AyuBadge } from '../components/common/AyuBadge';
+import { AdBanner } from '../components/common/AdBanner';
 
 export const ProfilPage: React.FC = () => {
   const {
@@ -143,6 +144,9 @@ export const ProfilPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* D'Ayu Pictures 5s Rewarded Ad Zone */}
+      <AdBanner variant="compact" className="mb-6" />
 
       {/* ==================== STATS ROW ==================== */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">

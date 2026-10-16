@@ -16,6 +16,7 @@ import {
 import { AyuBadge } from '../components/common/AyuBadge';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
 import { DramaCard } from '../components/home/DramaCard';
+import { AdBanner } from '../components/common/AdBanner';
 
 interface ButiranPageProps {
   slug: string;
@@ -213,6 +214,11 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
             </div>
 
           </div>
+        </div>
+
+        {/* Sponsor Banner: D'Ayu Pictures */}
+        <div className="mt-8">
+          <AdBanner variant="compact" />
         </div>
 
         {/* ==================== EPISODES LIST ==================== */}

@@ -52,7 +52,7 @@ export interface WatchProgress {
 
 export interface CoinTransaction {
   id: string;
-  type: 'recharge' | 'unlock_episode' | 'unlock_bundle' | 'bonus';
+  type: 'recharge' | 'unlock_episode' | 'unlock_bundle' | 'bonus' | 'ad_reward';
   amount: number; // positive for recharge/bonus, negative for unlock
   title: string;
   description: string;

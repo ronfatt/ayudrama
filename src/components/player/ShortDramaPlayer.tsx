@@ -55,6 +55,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
     unlockEpisode,
     unlockAllEpisodes,
     openTopUp,
+    openAdModal,
   } = useApp();
 
   const freeCount = getFreeEpisodeCount(drama.totalEpisodes);
@@ -421,6 +422,21 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                       <span>Tambah Nilai (Baki Tidak Mencukupi)</span>
                     </button>
                   )}
+
+                  {/* Watch 5s Ad to Unlock for Free */}
+                  <button
+                    onClick={() =>
+                      openAdModal({
+                        rewardType: 'unlock_episode',
+                        drama,
+                        episode: currentEpisode,
+                      })
+                    }
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white text-xs font-bold shadow-md shadow-emerald-500/20 flex items-center justify-center gap-1.5 transition-all active:scale-95"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-ayu-gold-light" />
+                    <span>Tonton Iklan 5s (Buka Percuma)</span>
+                  </button>
 
                   {/* Bundle Unlock Option */}
                   <button

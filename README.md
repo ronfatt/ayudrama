@@ -19,7 +19,13 @@
   - Buka Pakej Penuh Siri: diskaun istimewa 20% bagi baki keseluruhan episod.
 - **Ganjaran Harian**: Butang tebus 100 Syiling percuma setiap hari untuk penonton setia.
 
-### 3. Pusat Pengguna Lengkap (Profil & Dompet Syiling)
+### 3. Zon Iklan & Pop-up Ganjaran 5 Saat (D'Ayu Pictures)
+- **Tonton Iklan 5 Saat Untuk Buka Percuma**: Penonton boleh memilih menonton iklan tajaan selama 5 saat untuk membuka episod terkunci secara **percuma tanpa menolak syiling**, atau menuntut **+50 Ayu Syiling percuma**.
+- **Pemasa Undur Wajib 5 Saat (*Non-skippable 5s*)**: Butang langkau/tutup dikunci sehingga undur 5 saat selesai sepenuhnya.
+- **Pautan Rasmi D'Ayu Pictures**: Menampilkan kad tontonan sinematik dan pautan terus ke laman web rasmi [https://d.ayupictures.com](https://d.ayupictures.com).
+- **Sepanduk Tajaan (*AdBanner*)**: Ditempatkan secara strategik di Halaman Utama, Halaman Butiran Siri, dan Profil Pengguna.
+
+### 4. Pusat Pengguna Lengkap (Profil & Dompet Syiling)
 - **Kad Pengguna & VIP**: Paparan nama, ID Pengguna, taraf keahlian (*VIP Ayu*), dan tarikh pendaftaran.
 - **Baki Syiling Masa Nyata**: Terpapar pada palang navigasi atas (*Navbar*), pemain video, dan halaman profil.
 - **4 Tab Pengurusan Utama**:
@@ -31,7 +37,7 @@
   - Pakej Syiling Malaysia: RM5 (500), RM10 (1,100 + bonus), RM20 (2,400 + bonus), RM50 (6,500 + bonus).
   - Kaedah pembayaran tempatan: **Touch 'n Go eWallet**, **DuitNow QR**, **FPX Online Banking**, dan **GrabPay**.
 
-### 4. Pemain Drama Pendek Menegak (9:16 Immersive Player)
+### 5. Pemain Drama Pendek Menegak (9:16 Immersive Player)
 - **Navigasi Leret (Swipe Gestures)**: Leret ke atas atau ke bawah pada telefon pintar atau tatal tetikus (*wheel*) di komputer untuk bertukar episod.
 - **Papan Kekunci Mesra Desktop**:
   - `↑` / `↓` : Tukar episod sebelum / seterusnya.
@@ -43,10 +49,10 @@
 - **Pencegahan Pertindihan Audio**: Audio dan strim episod lama dihentikan sepenuhnya sebelum video baharu dimulakan.
 - **Keselamatan Rangkaian**: Sokongan butang `Cuba Lagi` jika video gagal dimuatkan.
 
-### 5. Pemain Filem Layar Lebar (16:9 Cinema Player)
+### 6. Pemain Filem Layar Lebar (16:9 Cinema Player)
 - Pemain video moden 16:9 dengan kawalan penuh: palang kemajuan (*scrubber*), tetapan kelantangan, skrin penuh, dan pilihan sari kata Bahasa Melayu (*subtitles track*).
 
-### 6. Navigasi & Pengurusan Storan Tempatan (localStorage)
+### 7. Navigasi & Pengurusan Storan Tempatan (localStorage)
 - **Utama (`/`)**: Hero Banner sinematik, baris Sambung Menonton, Trending, Ayu Originals, dan pelbagai genre.
 - **Drama Pendek (`/drama-pendek`)**: Hab penemuan drama menegak 9:16 dengan penapis kategori pantas.
 - **Filem (`/filem`)**: Koleksi filem 16:9 dengan penapis genre.

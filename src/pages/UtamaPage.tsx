@@ -3,6 +3,7 @@ import { DRAMAS_DATA } from '../data/dramas';
 import { useApp } from '../context/AppContext';
 import { HeroBanner } from '../components/home/HeroBanner';
 import { ContentRow } from '../components/home/ContentRow';
+import { AdBanner } from '../components/common/AdBanner';
 
 export const UtamaPage: React.FC = () => {
   const { watchHistory, navigate } = useApp();
@@ -60,6 +61,11 @@ export const UtamaPage: React.FC = () => {
           aspect="9/16"
           onViewAll={() => navigate('/drama-pendek')}
         />
+
+        {/* Sponsor Banner: D'Ayu Pictures (https://d.ayupictures.com) */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <AdBanner />
+        </div>
 
         {/* Cinta & Konflik */}
         <ContentRow

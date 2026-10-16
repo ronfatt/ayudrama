@@ -5,6 +5,7 @@ import { Navbar } from './components/common/Navbar';
 import { BottomNav } from './components/common/BottomNav';
 import { Toast } from './components/common/Toast';
 import { TopUpModal } from './components/common/TopUpModal';
+import { AdModal } from './components/common/AdModal';
 import { UtamaPage } from './pages/UtamaPage';
 import { DramaPendekPage } from './pages/DramaPendekPage';
 import { FilemPage } from './pages/FilemPage';
@@ -210,6 +211,9 @@ export const AppContent: React.FC = () => {
 
       {/* Global Top Up Modal */}
       <TopUpModal />
+
+      {/* Global 5-Second Rewarded Ad Modal (d.ayupictures.com) */}
+      <AdModal />
 
       {/* Global Toast Alert */}
       <Toast />
