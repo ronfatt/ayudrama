@@ -74,6 +74,6 @@ export interface UserProfile {
   name: string;
   email: string;
   avatar: string;
-  memberTier: 'Ahli Biasa' | 'VIP Ayu' | 'VIP Premium';
+  memberTier: 'Ahli Biasa' | 'VIP AIWAY' | 'VIP Premium';
   joinDate: string;
 }

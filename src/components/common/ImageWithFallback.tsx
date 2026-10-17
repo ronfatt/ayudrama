@@ -8,7 +8,7 @@ interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElemen
 
 export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   src,
-  alt = 'Ayu Drama Poster',
+  alt = 'AIWAY Poster',
   fallbackTitle,
   aspectRatioClass = 'aspect-[9/16]',
   className = '',
@@ -26,10 +26,10 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
           <Film className="w-5 h-5" />
         </div>
         <span className="text-xs font-semibold text-ayu-text line-clamp-2">
-          {fallbackTitle || alt || 'Ayu Drama'}
+          {fallbackTitle || alt || 'AIWAY'}
         </span>
-        <span className="text-[10px] text-ayu-text-subtle mt-1 tracking-wide">
-          ayu drama
+        <span className="text-[10px] text-ayu-coral font-bold mt-1 tracking-wider uppercase">
+          AIWAY • Ayu In Wayang
         </span>
       </div>
     );

@@ -76,10 +76,10 @@ export const UtamaPage: React.FC = () => {
           aspect="9/16"
         />
 
-        {/* Ayu Originals */}
+        {/* AIWAY Originals */}
         <ContentRow
-          title="Ayu Originals"
-          subtitle="Karya eksklusif diterbitkan khusus untuk penonton setia Ayu Drama"
+          title="AIWAY Originals"
+          subtitle="Karya eksklusif diterbitkan khusus untuk penonton setia AIWAY (Ayu In Wayang)"
           dramas={ayuOriginalsDramas}
           progressMap={watchHistory}
           aspect="9/16"

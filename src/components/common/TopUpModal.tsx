@@ -105,7 +105,7 @@ export const TopUpModal: React.FC = () => {
           </div>
           <div>
             <h2 id="topup-title" className="text-lg font-bold text-white flex items-center gap-2">
-              <span>Tambah Nilai Ayu Syiling</span>
+              <span>Tambah Nilai Syiling AIWAY</span>
             </h2>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-xs text-ayu-text-muted">Baki Semasa:</span>
@@ -238,7 +238,7 @@ export const TopUpModal: React.FC = () => {
             <span className="text-ayu-text-muted">Jumlah Diterima:</span>
             <span className="font-bold text-white text-sm flex items-center gap-1">
               <Coins className="w-4 h-4 text-ayu-gold-light fill-current" />
-              {totalCoins} Ayu Syiling
+              {totalCoins} Syiling AIWAY
             </span>
           </div>
 

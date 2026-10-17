@@ -134,15 +134,18 @@ export const AppContent: React.FC = () => {
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-ayu-border/30">
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-6 h-6 rounded-lg bg-ayu-coral flex items-center justify-center text-white font-extrabold text-sm">
-                    a
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-ayu-coral via-rose-500 to-amber-500 flex items-center justify-center text-white font-black text-xs shadow-sm">
+                    AI
                   </div>
-                  <span className="text-lg font-extrabold text-white tracking-tight lowercase">
-                    ayu<span className="text-ayu-coral">drama</span>
+                  <span className="text-xl font-black text-white tracking-tight">
+                    AI<span className="text-ayu-coral">WAY</span>
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-ayu-gold-light font-semibold">
+                    Ayu In Wayang
                   </span>
                 </div>
-                <p className="text-ayu-gold-light text-xs font-medium">
-                  Cerita dekat di hati.
+                <p className="text-ayu-gold-light text-xs font-semibold">
+                  Ayu In Wayang • Cerita dekat di hati.
                 </p>
                 <p className="text-[11px] text-ayu-text-subtle mt-1 max-w-sm">
                   Platform penstriman drama pendek dan sinema tempatan dengan sentuhan emosi masyarakat Malaysia.
@@ -199,7 +202,7 @@ export const AppContent: React.FC = () => {
                 </span>
               </div>
               <p className="flex items-center gap-1">
-                © {new Date().getFullYear()} Ayu Drama Malaysia. Hak cipta terpelihara.
+                © {new Date().getFullYear()} AIWAY (Ayu In Wayang) Malaysia. Hak cipta terpelihara.
               </p>
             </div>
           </div>

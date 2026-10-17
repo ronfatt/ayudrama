@@ -93,7 +93,7 @@ export const ProfilPage: React.FC = () => {
           <div className="bg-ayu-card/90 border border-ayu-gold/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-w-[280px]">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-ayu-text-subtle block">
-                Baki Ayu Syiling
+                Baki Syiling AIWAY
               </span>
               <div className="flex items-center gap-2 mt-1">
                 <Coins className="w-6 h-6 text-ayu-gold-light fill-current" />

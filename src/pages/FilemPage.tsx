@@ -58,11 +58,11 @@ export const FilemPage: React.FC = () => {
                 Koleksi Sinema Rasmi
               </span>
               <AyuBadge variant="gold" size="sm">
-                D'Ayu Pictures
+                AIWAY × D'Ayu Pictures
               </AyuBadge>
             </div>
             <p className="text-xs text-ayu-text-muted mt-0.5">
-              Karya filem pawagam terbitan D'Ayu Pictures dengan kualiti definisi tinggi dan audio sinematik.
+              Kerjasama rasmi AIWAY (Ayu In Wayang) dan D'Ayu Pictures membawakan karya filem pawagam terhebat.
             </p>
           </div>
         </div>

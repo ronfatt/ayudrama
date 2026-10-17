@@ -91,7 +91,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
 
           <div className="flex items-center gap-2 text-xs text-ayu-gold-light font-medium pt-1">
             <Coins className="w-4 h-4 fill-current" />
-            <span>Tonton iklan 5 saat D'Ayu Pictures untuk dapatkan 50 Ayu Syiling percuma!</span>
+            <span>Tonton iklan 5 saat D'Ayu Pictures untuk dapatkan 50 Syiling AIWAY percuma!</span>
           </div>
         </div>
 

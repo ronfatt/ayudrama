@@ -80,9 +80,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [userProfile] = useState<UserProfile>({
     id: 'AYU-88294',
     name: 'Ahmad Faiz',
-    email: 'faiz.ahmad@ayudrama.my',
+    email: 'faiz.ahmad@aiway.my',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop',
-    memberTier: 'VIP Ayu',
+    memberTier: 'VIP AIWAY',
     joinDate: 'Oktober 2025',
   });
 

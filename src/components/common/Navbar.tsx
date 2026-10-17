@@ -42,20 +42,20 @@ export const Navbar: React.FC = () => {
             onClick={() => navigate('/')}
             className="group text-left flex items-center gap-2 focus:outline-none"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-ayu-coral to-rose-600 flex items-center justify-center shadow-md shadow-ayu-coral/25">
-              <span className="text-white font-extrabold text-lg leading-none tracking-tighter">
-                a
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-ayu-coral via-rose-500 to-amber-500 flex items-center justify-center shadow-md shadow-ayu-coral/25">
+              <span className="text-white font-black text-xs leading-none tracking-tight">
+                AI
               </span>
             </div>
             <div className="flex flex-col">
               <div className="flex items-center">
-                <span className="text-xl font-extrabold tracking-tight text-white group-hover:text-ayu-coral transition-colors font-sans lowercase">
-                  ayu<span className="text-ayu-coral ml-0.5">drama</span>
+                <span className="text-xl font-black tracking-tight text-white group-hover:text-ayu-coral transition-colors font-sans">
+                  AI<span className="text-ayu-coral">WAY</span>
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-ayu-gold ml-1 animate-pulse" />
               </div>
-              <span className="text-[10px] text-ayu-text-subtle font-medium tracking-wide hidden sm:block">
-                Cerita dekat di hati.
+              <span className="text-[10px] text-ayu-text-subtle font-semibold tracking-wide hidden sm:block">
+                Ayu In Wayang
               </span>
             </div>
           </button>
@@ -91,7 +91,7 @@ export const Navbar: React.FC = () => {
           {/* Top Up / Coins Pill */}
           <button
             onClick={openTopUp}
-            title="Tambah nilai Ayu Syiling"
+            title="Tambah nilai Syiling AIWAY"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ayu-card/90 hover:bg-ayu-surface border border-ayu-gold/40 text-xs font-bold text-ayu-gold-light shadow-md transition-all active:scale-95"
           >
             <Coins className="w-3.5 h-3.5 fill-current" />

@@ -63,7 +63,7 @@ export const AdModal: React.FC = () => {
   const rewardLabel =
     adRewardType === 'unlock_episode' && targetEpisodeToUnlock
       ? `Buka Episod ${targetEpisodeToUnlock.episode.episodeNumber} Percuma`
-      : '+50 Ayu Syiling Percuma';
+      : '+50 Syiling AIWAY Percuma';
 
   return (
     <div
