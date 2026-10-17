@@ -82,13 +82,16 @@ export const TopUpModal: React.FC = () => {
       role="dialog"
       aria-modal="true"
       aria-labelledby="topup-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in"
       onClick={closeTopUp}
     >
       <div
-        className="bg-ayu-card border border-ayu-border w-full max-w-lg rounded-3xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto custom-scrollbar animate-slide-up"
+        className="bg-ayu-card border-t sm:border border-ayu-border w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar animate-slide-up pb-safe"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile Drag Handle */}
+        <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-3 sm:hidden" />
+
         {/* Close Button */}
         <button
           onClick={closeTopUp}

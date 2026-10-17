@@ -46,7 +46,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ drama }) => {
             {drama.isAyuOriginal && (
               <AyuBadge variant="coral" size="sm">
                 <Sparkles className="w-3 h-3" />
-                AYU ORIGINAL
+                AIWAY ORIGINAL
               </AyuBadge>
             )}
             {drama.isTrending && (
@@ -93,12 +93,12 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ drama }) => {
             ))}
           </div>
 
-          {/* Actions */}
-          <div className="flex flex-wrap items-center gap-3 pt-3">
+          {/* Actions with Mobile-optimized tap targets */}
+          <div className="flex items-center gap-2.5 pt-3 max-w-md sm:max-w-none">
             {/* Primary Watch Button */}
             <button
               onClick={() => navigate(playRoute)}
-              className="flex items-center gap-2.5 px-6 py-3 rounded-xl bg-ayu-coral hover:bg-ayu-coral-hover text-white font-bold text-sm shadow-xl shadow-ayu-coral/25 transform active:scale-95 transition-all"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-ayu-coral hover:bg-ayu-coral-hover text-white font-bold text-xs sm:text-sm shadow-xl shadow-ayu-coral/30 transform active:scale-95 transition-all"
             >
               <Play className="w-4 h-4 fill-current" />
               <span>{progress ? `Sambung Ep ${progress.episodeNumber}` : 'Tonton Sekarang'}</span>
@@ -107,20 +107,20 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ drama }) => {
             {/* Details Button */}
             <button
               onClick={() => navigate(`/butiran/${drama.slug}`)}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-ayu-card/80 hover:bg-ayu-card border border-ayu-border hover:border-ayu-border/80 text-ayu-text font-semibold text-sm backdrop-blur-md transition-all active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-ayu-card/90 hover:bg-ayu-card border border-ayu-border hover:border-ayu-border/80 text-ayu-text font-semibold text-xs sm:text-sm backdrop-blur-md transition-all active:scale-95"
             >
               <Info className="w-4 h-4 text-ayu-text-muted" />
-              <span>Lihat Butiran</span>
+              <span>Butiran</span>
             </button>
 
             {/* Add to List Toggle */}
             <button
               onClick={() => toggleSave(drama.id)}
               aria-label={saved ? 'Keluarkan dari Senarai' : 'Tambah ke Senarai'}
-              className={`p-3 rounded-xl border backdrop-blur-md transition-all active:scale-95 ${
+              className={`p-3.5 rounded-2xl border backdrop-blur-md transition-all active:scale-95 shrink-0 ${
                 saved
-                  ? 'bg-ayu-coral/15 border-ayu-coral text-ayu-coral'
-                  : 'bg-ayu-card/80 border-ayu-border text-ayu-text-muted hover:text-white'
+                  ? 'bg-ayu-coral/20 border-ayu-coral text-ayu-coral'
+                  : 'bg-ayu-card/90 border-ayu-border text-ayu-text-muted hover:text-white'
               }`}
             >
               {saved ? <Check className="w-4 h-4 stroke-[3]" /> : <Plus className="w-4 h-4" />}

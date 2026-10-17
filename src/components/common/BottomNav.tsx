@@ -43,24 +43,21 @@ export const BottomNav: React.FC = () => {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`flex flex-col items-center justify-center py-1 relative transition-all duration-200 ${
-                active ? 'text-ayu-coral scale-105' : 'text-ayu-text-muted hover:text-white'
+              className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-xl relative transition-all duration-200 active:scale-95 ${
+                active ? 'text-ayu-coral bg-ayu-coral/15 font-bold shadow-sm' : 'text-ayu-text-muted hover:text-white'
               }`}
             >
               <div className="relative">
-                <Icon className={`w-5 h-5 ${active ? 'stroke-[2.5px]' : 'stroke-[1.8px]'}`} />
+                <Icon className={`w-5 h-5 transition-transform duration-200 ${active ? 'stroke-[2.5px] scale-110' : 'stroke-[1.8px]'}`} />
                 {item.badge !== undefined && (
-                  <span className="absolute -top-1.5 -right-2.5 px-1 min-w-[14px] h-[14px] rounded-full bg-ayu-coral text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-2.5 px-1 min-w-[15px] h-[15px] rounded-full bg-ayu-coral text-white text-[9px] font-extrabold flex items-center justify-center shadow-md shadow-ayu-coral/40">
                     {item.badge}
                   </span>
                 )}
               </div>
-              <span className={`text-[10px] mt-1 font-medium ${active ? 'font-bold' : ''}`}>
+              <span className={`text-[10px] mt-0.5 tracking-tight ${active ? 'font-bold text-ayu-coral' : 'font-medium'}`}>
                 {item.label}
               </span>
-              {active && (
-                <span className="w-1 h-1 rounded-full bg-ayu-coral absolute bottom-0.5" />
-              )}
             </button>
           );
         })}

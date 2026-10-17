@@ -25,6 +25,10 @@ import {
   Coins,
   PlusCircle,
   Flame,
+  Share2,
+  Repeat,
+  Layers,
+  Grid3X3,
 } from 'lucide-react';
 import { AyuBadge } from '../common/AyuBadge';
 import { EPISODE_UNLOCK_COST } from '../../data/packages';
@@ -46,6 +50,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
     saveWatchProgress,
     getDramaProgress,
     autoplayNext,
+    setAutoplayNext,
     showToast,
     // Paywall & Coins
     coinsBalance,
@@ -83,9 +88,16 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
   const [showCenterIcon, setShowCenterIcon] = useState<boolean>(false);
   const [centerIconType, setCenterIconType] = useState<'play' | 'pause'>('play');
   const [isEpisodeDrawerOpen, setIsEpisodeDrawerOpen] = useState<boolean>(false);
+  const [drawerTab, setDrawerTab] = useState<'grid' | 'list'>('grid');
+  const [showGestureHint, setShowGestureHint] = useState<boolean>(true);
   const [likeCount, setLikeCount] = useState<number>(1420 + activeIndex * 37);
   const [hasLiked, setHasLiked] = useState<boolean>(false);
   const [showNextCountdown, setShowNextCountdown] = useState<number | null>(null);
+
+  useEffect(() => {
+    const hintTimer = setTimeout(() => setShowGestureHint(false), 3500);
+    return () => clearTimeout(hintTimer);
+  }, []);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -524,6 +536,13 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                   </div>
                 )}
 
+                {/* Mobile Gesture Hint (Fades out after 3.5s) */}
+                {showGestureHint && (
+                  <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 bg-black/80 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-xs text-white font-medium flex items-center gap-2 shadow-2xl pointer-events-none animate-pulse">
+                    <span>👆 Leret atas / bawah untuk tukar episod</span>
+                  </div>
+                )}
+
                 {/* Autoplay Countdown Pill */}
                 {showNextCountdown !== null && (
                   <div
@@ -585,7 +604,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
             <button
               onClick={onBack}
               aria-label="Kembali"
-              className="p-2 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md text-white transition-colors"
+              className="p-2 rounded-full bg-black/50 hover:bg-black/75 backdrop-blur-md text-white border border-white/10 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -613,7 +632,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
               <button
                 onClick={openTopUp}
                 aria-label="Buka baki syiling"
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-ayu-card/80 hover:bg-ayu-card border border-ayu-gold/40 text-[11px] font-bold text-ayu-gold-light backdrop-blur-md transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-ayu-card/90 hover:bg-ayu-card border border-ayu-gold/40 text-[11px] font-bold text-ayu-gold-light backdrop-blur-md transition-colors shadow-md"
               >
                 <Coins className="w-3.5 h-3.5 fill-current" />
                 <span>{coinsBalance}</span>
@@ -623,7 +642,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
               <button
                 onClick={toggleMute}
                 aria-label={isMuted ? 'Buka bunyi' : 'Matikan bunyi'}
-                className="p-2 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md text-white transition-colors"
+                className="p-2 rounded-full bg-black/50 hover:bg-black/75 backdrop-blur-md text-white border border-white/10 transition-colors"
               >
                 {isMuted ? <VolumeX className="w-4 h-4 text-ayu-coral" /> : <Volume2 className="w-4 h-4" />}
               </button>
@@ -631,7 +650,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
               <button
                 onClick={toggleFullscreen}
                 aria-label="Skrin penuh"
-                className="p-2 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md text-white transition-colors hidden sm:block"
+                className="p-2 rounded-full bg-black/50 hover:bg-black/75 backdrop-blur-md text-white border border-white/10 transition-colors hidden sm:block"
               >
                 {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
               </button>
@@ -639,7 +658,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
           </div>
 
           {/* ==================== RIGHT FLOATING ACTIONS ==================== */}
-          <div className="absolute right-2.5 bottom-24 z-20 flex flex-col items-center gap-4 text-white">
+          <div className="absolute right-2.5 bottom-28 sm:bottom-24 z-20 flex flex-col items-center gap-3 sm:gap-4 text-white">
             {/* Like Button */}
             <button
               onClick={handleLike}
@@ -650,7 +669,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                 className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-md border transition-all ${
                   hasLiked
                     ? 'bg-ayu-coral border-ayu-coral text-white scale-110 shadow-lg shadow-ayu-coral/40'
-                    : 'bg-black/50 border-white/10 text-white hover:bg-black/70'
+                    : 'bg-black/60 border-white/15 text-white hover:bg-black/80'
                 }`}
               >
                 <Heart className={`w-5 h-5 ${hasLiked ? 'fill-current text-white' : ''}`} />
@@ -670,7 +689,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                 className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-md border transition-all ${
                   isSavedItem
                     ? 'bg-ayu-coral border-ayu-coral text-white shadow-lg shadow-ayu-coral/30'
-                    : 'bg-black/50 border-white/10 text-white hover:bg-black/70'
+                    : 'bg-black/60 border-white/15 text-white hover:bg-black/80'
                 }`}
               >
                 <Bookmark className={`w-5 h-5 ${isSavedItem ? 'fill-current' : ''}`} />
@@ -680,30 +699,49 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
               </span>
             </button>
 
+            {/* Share Button */}
+            <button
+              onClick={() => {
+                if (navigator.clipboard) {
+                  navigator.clipboard.writeText(window.location.href);
+                  showToast('Pautan episod telah disalin!', 'success');
+                }
+              }}
+              aria-label="Kongsi episod"
+              className="group flex flex-col items-center focus:outline-none"
+            >
+              <div className="w-11 h-11 rounded-full bg-black/60 hover:bg-black/80 border border-white/15 flex items-center justify-center backdrop-blur-md transition-all">
+                <Share2 className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-[10px] font-semibold mt-1 drop-shadow">
+                Kongsi
+              </span>
+            </button>
+
             {/* Episode Selector Drawer Button */}
             <button
               onClick={() => setIsEpisodeDrawerOpen(true)}
               aria-label="Pilih episod"
               className="group flex flex-col items-center focus:outline-none"
             >
-              <div className="w-11 h-11 rounded-full bg-black/50 hover:bg-black/70 border border-white/10 flex items-center justify-center backdrop-blur-md transition-all">
-                <ListVideo className="w-5 h-5 text-ayu-gold-light" />
+              <div className="w-11 h-11 rounded-full bg-black/60 hover:bg-black/80 border border-ayu-coral/50 flex items-center justify-center backdrop-blur-md transition-all shadow-md">
+                <ListVideo className="w-5 h-5 text-ayu-coral" />
               </div>
-              <span className="text-[10px] font-semibold mt-1 drop-shadow">
+              <span className="text-[10px] font-bold mt-1 text-ayu-coral drop-shadow">
                 Episod
               </span>
             </button>
 
             {/* Up / Down Switchers */}
-            <div className="flex flex-col gap-1.5 pt-2">
+            <div className="flex flex-col gap-1.5 pt-1">
               <button
                 onClick={goToPrevEpisode}
                 disabled={activeIndex === 0}
                 aria-label="Episod sebelumnya"
-                className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md border border-white/10 transition-all ${
+                className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md border border-white/15 transition-all ${
                   activeIndex === 0
                     ? 'bg-black/20 text-white/30 cursor-not-allowed'
-                    : 'bg-black/50 text-white hover:bg-black/80'
+                    : 'bg-black/60 text-white hover:bg-black/80'
                 }`}
               >
                 <ChevronUp className="w-4 h-4" />
@@ -712,10 +750,10 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                 onClick={goToNextEpisode}
                 disabled={activeIndex === drama.episodes.length - 1}
                 aria-label="Episod seterusnya"
-                className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md border border-white/10 transition-all ${
+                className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md border border-white/15 transition-all ${
                   activeIndex === drama.episodes.length - 1
                     ? 'bg-black/20 text-white/30 cursor-not-allowed'
-                    : 'bg-black/50 text-white hover:bg-black/80'
+                    : 'bg-black/60 text-white hover:bg-black/80'
                 }`}
               >
                 <ChevronDown className="w-4 h-4" />
@@ -724,8 +762,8 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
           </div>
 
           {/* ==================== BOTTOM INFO & SEEKBAR ==================== */}
-          <div className="relative z-20 pb-safe px-4 py-3 bg-gradient-to-t from-black via-black/80 to-transparent text-white">
-            <div className="pr-14 mb-2">
+          <div className="relative z-20 pb-safe px-4 py-3 bg-gradient-to-t from-black via-black/85 to-transparent text-white">
+            <div className="pr-14">
               <div className="flex items-center gap-2 mb-1">
                 <h2 className="text-sm font-bold text-white drop-shadow line-clamp-1">
                   {currentEpisode.title}
@@ -747,6 +785,33 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
               <p className="text-[11px] text-ayu-text-muted leading-tight line-clamp-2">
                 {currentEpisode.synopsis}
               </p>
+            </div>
+
+            {/* Mobile Quick Control Pills Bar (Episode Picker & Autoplay) */}
+            <div className="flex flex-wrap items-center gap-2 my-2.5">
+              <button
+                onClick={() => setIsEpisodeDrawerOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ayu-card/90 hover:bg-ayu-surface border border-ayu-coral/40 text-xs font-bold text-white shadow-lg active:scale-95 transition-all"
+              >
+                <ListVideo className="w-3.5 h-3.5 text-ayu-coral" />
+                <span>Pilih Episod ({currentEpisode.episodeNumber}/{drama.totalEpisodes})</span>
+                <ChevronDown className="w-3.5 h-3.5 text-ayu-text-muted" />
+              </button>
+
+              <button
+                onClick={() => {
+                  setAutoplayNext((prev: boolean) => !prev);
+                  showToast(autoplayNext ? 'Auto-main dimatikan' : 'Auto-main dihidupkan', 'info');
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-md transition-all active:scale-95 ${
+                  autoplayNext
+                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                    : 'bg-black/50 border-white/10 text-white/70 hover:text-white'
+                }`}
+              >
+                <Repeat className="w-3 h-3" />
+                <span>Auto-main: {autoplayNext ? 'ON' : 'OFF'}</span>
+              </button>
             </div>
 
             {/* Seekbar if unlocked */}
@@ -776,10 +841,13 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
               onClick={() => setIsEpisodeDrawerOpen(false)}
             >
               <div
-                className="bg-ayu-card border-t border-ayu-border rounded-t-3xl p-5 max-h-[75vh] flex flex-col animate-slide-up"
+                className="bg-ayu-card border-t border-ayu-border rounded-t-3xl p-5 max-h-[82vh] flex flex-col animate-slide-up"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Header with 30% indicator */}
+                {/* Drag Handle Indicator */}
+                <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-3" />
+
+                {/* Header with 30% indicator & Close */}
                 <div className="flex items-center justify-between pb-3 border-b border-ayu-border/60">
                   <div className="flex items-center gap-2">
                     <ListVideo className="w-5 h-5 text-ayu-coral" />
@@ -802,69 +870,166 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                   </button>
                 </div>
 
-                {/* Episodes List with Lock/Free badges */}
-                <div className="overflow-y-auto custom-scrollbar divide-y divide-ayu-border/30 py-2">
-                  {drama.episodes.map((ep, idx) => {
-                    const isCurrent = idx === activeIndex;
-                    const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
-                    const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
+                {/* View Mode Tabs: Grid Nombor vs Butiran */}
+                <div className="flex items-center gap-1 p-1 bg-ayu-surface/80 rounded-xl my-3">
+                  <button
+                    onClick={() => setDrawerTab('grid')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      drawerTab === 'grid'
+                        ? 'bg-ayu-coral text-white shadow-sm'
+                        : 'text-ayu-text-muted hover:text-white'
+                    }`}
+                  >
+                    <Grid3X3 className="w-3.5 h-3.5" />
+                    <span>Grid Nombor</span>
+                  </button>
+                  <button
+                    onClick={() => setDrawerTab('list')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      drawerTab === 'list'
+                        ? 'bg-ayu-coral text-white shadow-sm'
+                        : 'text-ayu-text-muted hover:text-white'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>Butiran Penuh</span>
+                  </button>
+                </div>
 
-                    return (
-                      <button
-                        key={ep.id}
-                        onClick={() => {
-                          setActiveIndex(idx);
-                          setIsEpisodeDrawerOpen(false);
-                        }}
-                        className={`w-full text-left py-3 px-2 flex items-start gap-3 rounded-xl transition-colors ${
-                          isCurrent
-                            ? 'bg-ayu-coral/10 text-ayu-coral'
-                            : 'hover:bg-white/5 text-ayu-text'
-                        }`}
-                      >
-                        <div
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+                {/* Content: Grid or List */}
+                {drawerTab === 'grid' ? (
+                  /* Number Grid: 5 columns on mobile */
+                  <div className="overflow-y-auto custom-scrollbar max-h-[50vh] p-1">
+                    <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
+                      {drama.episodes.map((ep, idx) => {
+                        const isCurrent = idx === activeIndex;
+                        const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
+                        const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
+
+                        return (
+                          <button
+                            key={ep.id}
+                            onClick={() => {
+                              setActiveIndex(idx);
+                              setIsEpisodeDrawerOpen(false);
+                            }}
+                            className={`relative aspect-square rounded-xl p-1 flex flex-col items-center justify-center border transition-all active:scale-95 ${
+                              isCurrent
+                                ? 'bg-ayu-coral border-ayu-coral text-white shadow-lg shadow-ayu-coral/30 ring-2 ring-ayu-coral/50'
+                                : isFree || isUnlocked
+                                ? 'bg-ayu-surface hover:bg-white/10 border-ayu-border/60 text-white'
+                                : 'bg-black/30 hover:bg-black/50 border-ayu-border/30 text-ayu-text-subtle'
+                            }`}
+                          >
+                            <span className="text-sm font-extrabold leading-none">
+                              {ep.episodeNumber}
+                            </span>
+                            <div className="mt-1">
+                              {isFree ? (
+                                <span className="text-[8px] font-bold text-emerald-400 leading-none">
+                                  FREE
+                                </span>
+                              ) : isUnlocked ? (
+                                <Unlock className="w-2.5 h-2.5 text-sky-400" />
+                              ) : (
+                                <Lock className="w-2.5 h-2.5 text-ayu-gold-light" />
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  /* Detailed List */
+                  <div className="overflow-y-auto custom-scrollbar divide-y divide-ayu-border/30 max-h-[50vh]">
+                    {drama.episodes.map((ep, idx) => {
+                      const isCurrent = idx === activeIndex;
+                      const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
+                      const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
+
+                      return (
+                        <button
+                          key={ep.id}
+                          onClick={() => {
+                            setActiveIndex(idx);
+                            setIsEpisodeDrawerOpen(false);
+                          }}
+                          className={`w-full text-left py-3 px-2 flex items-start gap-3 rounded-xl transition-colors ${
                             isCurrent
-                              ? 'bg-ayu-coral text-white'
-                              : isFree || isUnlocked
-                              ? 'bg-ayu-surface text-ayu-text-muted'
-                              : 'bg-ayu-muted/60 text-ayu-text-subtle'
+                              ? 'bg-ayu-coral/10 text-ayu-coral'
+                              : 'hover:bg-white/5 text-ayu-text'
                           }`}
                         >
-                          {ep.episodeNumber}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-1">
-                            <span
-                              className={`text-xs font-semibold truncate ${
-                                isCurrent ? 'text-ayu-coral' : 'text-white'
-                              }`}
-                            >
-                              {ep.title}
-                            </span>
-
-                            {isFree ? (
-                              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded shrink-0">
-                                Percuma
-                              </span>
-                            ) : isUnlocked ? (
-                              <span className="text-[10px] text-sky-400 font-bold bg-sky-500/10 px-1.5 py-0.5 rounded shrink-0 flex items-center gap-0.5">
-                                <Unlock className="w-2.5 h-2.5" /> Dibuka
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-ayu-gold-light font-bold bg-ayu-gold/10 px-1.5 py-0.5 rounded shrink-0 flex items-center gap-1">
-                                <Lock className="w-2.5 h-2.5" /> 50 Syiling
-                              </span>
-                            )}
+                          <div
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+                              isCurrent
+                                ? 'bg-ayu-coral text-white'
+                                : isFree || isUnlocked
+                                ? 'bg-ayu-surface text-ayu-text-muted'
+                                : 'bg-ayu-muted/60 text-ayu-text-subtle'
+                            }`}
+                          >
+                            {ep.episodeNumber}
                           </div>
-                          <p className="text-[11px] text-ayu-text-muted truncate mt-0.5">
-                            {ep.synopsis}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1">
+                              <span
+                                className={`text-xs font-semibold truncate ${
+                                  isCurrent ? 'text-ayu-coral' : 'text-white'
+                                }`}
+                              >
+                                {ep.title}
+                              </span>
+
+                              {isFree ? (
+                                <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded shrink-0">
+                                  Percuma
+                                </span>
+                              ) : isUnlocked ? (
+                                <span className="text-[10px] text-sky-400 font-bold bg-sky-500/10 px-1.5 py-0.5 rounded shrink-0 flex items-center gap-0.5">
+                                  <Unlock className="w-2.5 h-2.5" /> Dibuka
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-ayu-gold-light font-bold bg-ayu-gold/10 px-1.5 py-0.5 rounded shrink-0 flex items-center gap-1">
+                                  <Lock className="w-2.5 h-2.5" /> 50 Syiling
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-ayu-text-muted truncate mt-0.5">
+                              {ep.synopsis}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Drawer Footer Actions */}
+                <div className="pt-3.5 mt-2 border-t border-ayu-border/60 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={openTopUp}
+                      className="flex items-center gap-1 text-xs bg-ayu-surface px-2.5 py-1.5 rounded-lg border border-ayu-gold/30 text-ayu-gold-light font-bold"
+                    >
+                      <Coins className="w-3.5 h-3.5 fill-current" />
+                      <span>{coinsBalance} Syiling</span>
+                      <PlusCircle className="w-3 h-3 text-ayu-coral ml-0.5" />
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setIsEpisodeDrawerOpen(false);
+                      unlockAllEpisodes(drama);
+                    }}
+                    className="flex-1 max-w-[210px] py-2 px-3 rounded-xl bg-ayu-coral hover:bg-ayu-coral-hover text-white text-xs font-bold shadow-md shadow-ayu-coral/25 flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    <Flame className="w-3.5 h-3.5" />
+                    <span>Buka Semua (Jimat 20%)</span>
+                  </button>
                 </div>
               </div>
             </div>

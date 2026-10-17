@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DRAMAS_DATA } from '../data/dramas';
 import { useApp } from '../context/AppContext';
 import {
@@ -12,6 +12,8 @@ import {
   Share2,
   Lock,
   Unlock,
+  Grid3X3,
+  Layers,
 } from 'lucide-react';
 import { AyuBadge } from '../components/common/AyuBadge';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
@@ -33,6 +35,8 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
     isEpisodeUnlocked,
     getFreeEpisodeCount,
   } = useApp();
+
+  const [viewTab, setViewTab] = useState<'grid' | 'list'>('grid');
 
   const drama = DRAMAS_DATA.find((d) => d.slug === slug);
 
@@ -122,7 +126,7 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
               {drama.isAyuOriginal && (
                 <AyuBadge variant="coral" size="sm">
                   <Sparkles className="w-3 h-3" />
-                  AYU ORIGINAL
+                  AIWAY ORIGINAL
                 </AyuBadge>
               )}
               <AyuBadge variant="dark" size="sm">
@@ -223,7 +227,7 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
 
         {/* ==================== EPISODES LIST ==================== */}
         <div className="mt-12 pt-8 border-t border-ayu-border/60">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-white">
                 {drama.format === 'movie' ? 'Tayangan Filem' : 'Semua Episod'}
@@ -236,116 +240,195 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
             </div>
 
             {drama.format === 'short_drama' && (
-              <div className="flex items-center gap-2 text-xs bg-ayu-card border border-ayu-border/60 px-3 py-1.5 rounded-xl self-start sm:self-auto">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="text-white font-medium">
-                  Ep 1-{getFreeEpisodeCount(drama.totalEpisodes)} Percuma (30% Siri)
-                </span>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex items-center gap-2 text-xs bg-ayu-card border border-ayu-border/60 px-3 py-1.5 rounded-xl">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="text-white font-medium">
+                    Ep 1-{getFreeEpisodeCount(drama.totalEpisodes)} Percuma (30% Siri)
+                  </span>
+                </div>
+
+                {/* View Switcher: Grid vs List */}
+                <div className="flex items-center gap-1 p-1 bg-ayu-card/90 border border-ayu-border/60 rounded-xl">
+                  <button
+                    onClick={() => setViewTab('grid')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      viewTab === 'grid'
+                        ? 'bg-ayu-coral text-white shadow-sm'
+                        : 'text-ayu-text-muted hover:text-white'
+                    }`}
+                  >
+                    <Grid3X3 className="w-3.5 h-3.5" />
+                    <span>Grid Nombor</span>
+                  </button>
+                  <button
+                    onClick={() => setViewTab('list')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      viewTab === 'list'
+                        ? 'bg-ayu-coral text-white shadow-sm'
+                        : 'text-ayu-text-muted hover:text-white'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>Butiran Penuh</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {drama.episodes.map((ep) => {
-              const isWatched = progress && progress.episodeNumber >= ep.episodeNumber;
-              const isCurrent = progress && progress.episodeId === ep.id;
-              const isAvailable = ep.status === 'available';
-              const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
-              const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
+          {/* Episodes Content (Grid Nombor or Detailed List) */}
+          {drama.format === 'short_drama' && viewTab === 'grid' ? (
+            /* Quick Number Grid View */
+            <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 sm:gap-3">
+              {drama.episodes.map((ep) => {
+                const isCurrent = progress && progress.episodeId === ep.id;
+                const isAvailable = ep.status === 'available';
+                const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
+                const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
 
-              return (
-                <div
-                  key={ep.id}
-                  onClick={() => {
-                    if (isAvailable) {
-                      const epRoute =
-                        drama.format === 'movie'
-                          ? `/tonton-filem/${drama.slug}`
-                          : `/tonton/${drama.slug}/${ep.id}`;
-                      navigate(epRoute);
-                    } else {
-                      showToast('Episod ini akan ditayangkan tidak lama lagi.', 'info');
-                    }
-                  }}
-                  className={`p-3.5 rounded-2xl border flex items-start gap-3.5 transition-all cursor-pointer ${
-                    isCurrent
-                      ? 'bg-ayu-coral/10 border-ayu-coral'
-                      : isAvailable
-                      ? 'bg-ayu-card/80 hover:bg-ayu-surface border-ayu-border/60 hover:border-ayu-border'
-                      : 'bg-ayu-surface/30 border-ayu-border/30 opacity-70 cursor-not-allowed'
-                  }`}
-                >
-                  {/* Thumbnail / Number */}
-                  <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-ayu-surface shrink-0 border border-white/5">
-                    <img
-                      src={ep.thumbnail || drama.poster}
-                      alt={ep.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      {isAvailable ? (
-                        <Play className="w-5 h-5 text-white/90 fill-current" />
+                return (
+                  <button
+                    key={ep.id}
+                    onClick={() => {
+                      if (isAvailable) {
+                        navigate(`/tonton/${drama.slug}/${ep.id}`);
+                      } else {
+                        showToast('Episod ini akan ditayangkan tidak lama lagi.', 'info');
+                      }
+                    }}
+                    className={`relative aspect-square rounded-2xl p-1.5 flex flex-col items-center justify-center border transition-all active:scale-95 ${
+                      isCurrent
+                        ? 'bg-ayu-coral border-ayu-coral text-white shadow-lg shadow-ayu-coral/30 ring-2 ring-ayu-coral/50'
+                        : isAvailable
+                        ? 'bg-ayu-card/90 hover:bg-ayu-surface border-ayu-border/60 hover:border-ayu-border text-white'
+                        : 'bg-ayu-surface/30 border-ayu-border/30 opacity-60 text-ayu-text-subtle'
+                    }`}
+                  >
+                    <span className="text-sm sm:text-base font-extrabold leading-none">
+                      {ep.episodeNumber}
+                    </span>
+                    <div className="mt-1">
+                      {isFree ? (
+                        <span className="text-[8px] font-bold text-emerald-400">
+                          FREE
+                        </span>
+                      ) : isUnlocked ? (
+                        <Unlock className="w-2.5 h-2.5 text-sky-400" />
+                      ) : isAvailable ? (
+                        <Lock className="w-2.5 h-2.5 text-ayu-gold-light" />
                       ) : (
-                        <Clock className="w-5 h-5 text-ayu-gold" />
+                        <Clock className="w-2.5 h-2.5 text-ayu-text-subtle" />
                       )}
                     </div>
-                  </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* Detailed Cards List */
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {drama.episodes.map((ep) => {
+                const isWatched = progress && progress.episodeNumber >= ep.episodeNumber;
+                const isCurrent = progress && progress.episodeId === ep.id;
+                const isAvailable = ep.status === 'available';
+                const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
+                const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
 
-                  {/* Episode Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1">
-                      <span className="text-xs font-bold text-white truncate">
-                        {ep.title}
-                      </span>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {isAvailable && drama.format === 'short_drama' && (
-                          isFree ? (
-                            <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                              Percuma
-                            </span>
-                          ) : isUnlocked ? (
-                            <span className="text-[10px] text-sky-400 font-bold bg-sky-500/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                              <Unlock className="w-2.5 h-2.5" /> Dibuka
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-ayu-gold-light font-bold bg-ayu-gold/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                              <Lock className="w-2.5 h-2.5" /> 50 Syiling
-                            </span>
-                          )
-                        )}
+                return (
+                  <div
+                    key={ep.id}
+                    onClick={() => {
+                      if (isAvailable) {
+                        const epRoute =
+                          drama.format === 'movie'
+                            ? `/tonton-filem/${drama.slug}`
+                            : `/tonton/${drama.slug}/${ep.id}`;
+                        navigate(epRoute);
+                      } else {
+                        showToast('Episod ini akan ditayangkan tidak lama lagi.', 'info');
+                      }
+                    }}
+                    className={`p-3.5 rounded-2xl border flex items-start gap-3.5 transition-all cursor-pointer ${
+                      isCurrent
+                        ? 'bg-ayu-coral/10 border-ayu-coral'
+                        : isAvailable
+                        ? 'bg-ayu-card/80 hover:bg-ayu-surface border-ayu-border/60 hover:border-ayu-border'
+                        : 'bg-ayu-surface/30 border-ayu-border/30 opacity-70 cursor-not-allowed'
+                    }`}
+                  >
+                    {/* Thumbnail / Number */}
+                    <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-ayu-surface shrink-0 border border-white/5">
+                      <img
+                        src={ep.thumbnail || drama.poster}
+                        alt={ep.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                         {isAvailable ? (
-                          <span className="text-[10px] font-mono text-ayu-text-subtle">
-                            {ep.duration}
-                          </span>
+                          <Play className="w-5 h-5 text-white/90 fill-current" />
                         ) : (
-                          <AyuBadge variant="gold" size="sm">
-                            Akan Datang
-                          </AyuBadge>
+                          <Clock className="w-5 h-5 text-ayu-gold" />
                         )}
                       </div>
                     </div>
 
-                    <p className="text-[11px] text-ayu-text-muted line-clamp-2 mt-1">
-                      {ep.synopsis}
-                    </p>
+                    {/* Episode Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-xs font-bold text-white truncate">
+                          {ep.title}
+                        </span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {isAvailable && drama.format === 'short_drama' && (
+                            isFree ? (
+                              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                                Percuma
+                              </span>
+                            ) : isUnlocked ? (
+                              <span className="text-[10px] text-sky-400 font-bold bg-sky-500/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                <Unlock className="w-2.5 h-2.5" /> Dibuka
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-ayu-gold-light font-bold bg-ayu-gold/10 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                <Lock className="w-2.5 h-2.5" /> 50 Syiling
+                              </span>
+                            )
+                          )}
+                          {isAvailable ? (
+                            <span className="text-[10px] font-mono text-ayu-text-subtle">
+                              {ep.duration}
+                            </span>
+                          ) : (
+                            <AyuBadge variant="gold" size="sm">
+                              Akan Datang
+                            </AyuBadge>
+                          )}
+                        </div>
+                      </div>
 
-                    <div className="flex items-center gap-2 mt-2">
-                      {isCurrent && (
-                        <span className="text-[10px] font-bold text-ayu-coral flex items-center gap-1">
-                          Sedang Ditonton
-                        </span>
-                      )}
-                      {isWatched && !isCurrent && (
-                        <span className="text-[10px] text-emerald-400 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Telah Ditonton
-                        </span>
-                      )}
+                      <p className="text-[11px] text-ayu-text-muted line-clamp-2 mt-1">
+                        {ep.synopsis}
+                      </p>
+
+                      <div className="flex items-center gap-2 mt-2">
+                        {isCurrent && (
+                          <span className="text-[10px] font-bold text-ayu-coral flex items-center gap-1">
+                            Sedang Ditonton
+                          </span>
+                        )}
+                        {isWatched && !isCurrent && (
+                          <span className="text-[10px] text-emerald-400 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Telah Ditonton
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* ==================== RELATED RECOMMENDATIONS ==================== */}
@@ -362,6 +445,35 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
           </div>
         )}
 
+      </div>
+
+      {/* Mobile Sticky Floating Bottom CTA Bar */}
+      <div className="md:hidden fixed bottom-16 left-0 right-0 z-30 p-3 bg-gradient-to-t from-black via-black/95 to-transparent pointer-events-none">
+        <div className="flex items-center gap-2 pointer-events-auto max-w-md mx-auto">
+          <button
+            onClick={() => navigate(playRoute)}
+            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-ayu-coral hover:bg-ayu-coral-hover text-white font-bold text-xs shadow-xl shadow-ayu-coral/30 active:scale-95 transition-all"
+          >
+            <Play className="w-4 h-4 fill-current" />
+            <span>
+              {progress
+                ? `Sambung Ep ${progress.episodeNumber}`
+                : 'Tonton Sekarang'}
+            </span>
+          </button>
+
+          <button
+            onClick={() => toggleSave(drama.id)}
+            aria-label={saved ? 'Keluarkan dari Senarai' : 'Simpan drama'}
+            className={`p-3 rounded-xl border backdrop-blur-md active:scale-95 transition-all ${
+              saved
+                ? 'bg-ayu-coral/20 border-ayu-coral text-ayu-coral'
+                : 'bg-ayu-card/90 border-ayu-border text-white'
+            }`}
+          >
+            {saved ? <Check className="w-4 h-4 stroke-[3]" /> : <Bookmark className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
     </div>
   );

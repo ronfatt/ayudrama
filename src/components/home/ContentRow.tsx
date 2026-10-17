@@ -78,13 +78,13 @@ export const ContentRow: React.FC<ContentRowProps> = ({
         </div>
       </div>
 
-      {/* Scrollable Container */}
+      {/* Scrollable Container with Smooth Mobile Snap */}
       <div
         ref={scrollRef}
-        className="flex items-stretch gap-3 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-2"
+        className="flex items-stretch gap-3 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory overscroll-x-contain px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-2"
       >
         {dramas.map((drama) => (
-          <div key={drama.id} className={cardWidthClass}>
+          <div key={drama.id} className={`${cardWidthClass} snap-start`}>
             <DramaCard
               drama={drama}
               progress={progressMap ? progressMap[drama.id] : undefined}
