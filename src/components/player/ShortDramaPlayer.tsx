@@ -63,7 +63,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
     openAdModal,
   } = useApp();
 
-  const freeCount = getFreeEpisodeCount(drama.totalEpisodes);
+  const freeCount = getFreeEpisodeCount(drama.totalEpisodes, drama.freeEpisodesCount);
 
   // Find saved progress if initialEpisodeId is not explicitly given
   const savedProgress = getDramaProgress(drama.id);
@@ -112,7 +112,8 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
     drama.id,
     currentEpisode.id,
     currentEpisode.episodeNumber,
-    drama.totalEpisodes
+    drama.totalEpisodes,
+    drama.freeEpisodesCount
   );
 
   // When changing episode index or unlock state
@@ -500,26 +501,50 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                   <div className="absolute inset-0 bg-ayu-card/95 flex flex-col items-center justify-center p-6 text-center z-20">
                     <AlertTriangle className="w-12 h-12 text-ayu-gold mb-3 animate-pulse" />
                     <h4 className="text-base font-bold text-white mb-1">
-                      Gagal Memuatkan Video
+                      {currentEpisode.videoUrl.startsWith('/videos/')
+                        ? 'Video Tempatan Belum Ditemui'
+                        : 'Gagal Memuatkan Video'}
                     </h4>
                     <p className="text-xs text-ayu-text-muted mb-4 max-w-xs">
-                      Sila periksa sambungan internet anda atau cuba muat semula video ini.
+                      {currentEpisode.videoUrl.startsWith('/videos/')
+                        ? `Letakkan fail video di public${currentEpisode.videoUrl} atau tekan butang di bawah untuk uji dengan klip demo.`
+                        : 'Sila periksa sambungan internet anda atau cuba muat semula video ini.'}
                     </p>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setHasError(false);
-                        setIsLoading(true);
-                        if (videoRef.current) {
-                          videoRef.current.load();
-                          videoRef.current.play().catch(() => {});
-                        }
-                      }}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ayu-coral hover:bg-ayu-coral-hover text-white text-xs font-bold transition-all shadow-lg shadow-ayu-coral/25"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                      <span>Cuba Lagi</span>
-                    </button>
+                    <div className="flex flex-col gap-2 w-full max-w-xs">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setHasError(false);
+                          setIsLoading(true);
+                          if (videoRef.current) {
+                            videoRef.current.load();
+                            videoRef.current.play().catch(() => {});
+                          }
+                        }}
+                        className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-ayu-coral hover:bg-ayu-coral-hover text-white text-xs font-bold transition-all shadow-lg shadow-ayu-coral/25"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        <span>Cuba Lagi (Muat Semula)</span>
+                      </button>
+                      {currentEpisode.videoUrl.startsWith('/videos/') && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (videoRef.current) {
+                              videoRef.current.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+                              videoRef.current.load();
+                              videoRef.current.play().catch(() => {});
+                              setHasError(false);
+                              setIsLoading(false);
+                            }
+                          }}
+                          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-ayu-surface hover:bg-white/10 border border-white/10 text-ayu-gold-light text-xs font-semibold transition-all"
+                        >
+                          <Play className="w-4 h-4 fill-current" />
+                          <span>Uji Dengan Klip Demo</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -618,7 +643,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                 <span className="text-[10px] text-ayu-gold-light font-medium">
                   Episod {currentEpisode.episodeNumber} / {drama.totalEpisodes}
                 </span>
-                {isEpisodeFree(currentEpisode.episodeNumber, drama.totalEpisodes) && (
+                {isEpisodeFree(currentEpisode.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount) && (
                   <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.2 rounded-full font-bold">
                     Percuma
                   </span>
@@ -768,7 +793,7 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                 <h2 className="text-sm font-bold text-white drop-shadow line-clamp-1">
                   {currentEpisode.title}
                 </h2>
-                {isEpisodeFree(currentEpisode.episodeNumber, drama.totalEpisodes) ? (
+                {isEpisodeFree(currentEpisode.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount) ? (
                   <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-md border border-emerald-500/30">
                     Percuma
                   </span>
@@ -903,8 +928,8 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                     <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
                       {drama.episodes.map((ep, idx) => {
                         const isCurrent = idx === activeIndex;
-                        const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
-                        const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
+                        const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount);
+                        const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount);
 
                         return (
                           <button
@@ -945,8 +970,8 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
                   <div className="overflow-y-auto custom-scrollbar divide-y divide-ayu-border/30 max-h-[50vh]">
                     {drama.episodes.map((ep, idx) => {
                       const isCurrent = idx === activeIndex;
-                      const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
-                      const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
+                      const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount);
+                      const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount);
 
                       return (
                         <button
@@ -1093,8 +1118,8 @@ export const ShortDramaPlayer: React.FC<ShortDramaPlayerProps> = ({
             <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
               {drama.episodes.map((ep, idx) => {
                 const isCurrent = idx === activeIndex;
-                const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
-                const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
+                const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount);
+                const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount);
 
                 return (
                   <button

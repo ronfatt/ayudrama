@@ -244,7 +244,7 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
                 <div className="flex items-center gap-2 text-xs bg-ayu-card border border-ayu-border/60 px-3 py-1.5 rounded-xl">
                   <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span className="text-white font-medium">
-                    Ep 1-{getFreeEpisodeCount(drama.totalEpisodes)} Percuma (30% Siri)
+                    Ep 1-{getFreeEpisodeCount(drama.totalEpisodes, drama.freeEpisodesCount)} Percuma {drama.freeEpisodesCount ? `(Ep 1-${drama.freeEpisodesCount})` : '(30% Siri)'}
                   </span>
                 </div>
 
@@ -284,8 +284,8 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
               {drama.episodes.map((ep) => {
                 const isCurrent = progress && progress.episodeId === ep.id;
                 const isAvailable = ep.status === 'available';
-                const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
-                const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
+                const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount);
+                const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount);
 
                 return (
                   <button
@@ -332,8 +332,8 @@ export const ButiranPage: React.FC<ButiranPageProps> = ({ slug }) => {
                 const isWatched = progress && progress.episodeNumber >= ep.episodeNumber;
                 const isCurrent = progress && progress.episodeId === ep.id;
                 const isAvailable = ep.status === 'available';
-                const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes);
-                const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes);
+                const isFree = isEpisodeFree(ep.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount);
+                const isUnlocked = isEpisodeUnlocked(drama.id, ep.id, ep.episodeNumber, drama.totalEpisodes, drama.freeEpisodesCount);
 
                 return (
                   <div

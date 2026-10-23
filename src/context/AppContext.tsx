@@ -31,9 +31,15 @@ interface AppContextType {
   coinsBalance: number;
   unlockedEpisodes: string[];
   transactions: CoinTransaction[];
-  getFreeEpisodeCount: (totalEpisodes: number) => number;
-  isEpisodeFree: (episodeNumber: number, totalEpisodes: number) => boolean;
-  isEpisodeUnlocked: (dramaId: string, episodeId: string, episodeNumber: number, totalEpisodes: number) => boolean;
+  getFreeEpisodeCount: (totalEpisodes: number, freeCountOverride?: number) => number;
+  isEpisodeFree: (episodeNumber: number, totalEpisodes: number, freeCountOverride?: number) => boolean;
+  isEpisodeUnlocked: (
+    dramaId: string,
+    episodeId: string,
+    episodeNumber: number,
+    totalEpisodes: number,
+    freeCountOverride?: number
+  ) => boolean;
   unlockEpisode: (drama: Drama, episode: Episode, cost?: number) => { success: boolean; message: string };
   unlockAllEpisodes: (drama: Drama) => { success: boolean; message: string };
   rechargeCoins: (packageName: string, coinsTotal: number, priceRM: number, paymentMethodName: string) => void;
@@ -312,14 +318,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // ==================== 30% FREE PAYWALL LOGIC ====================
   // Calculate free episode count (30% of total episodes)
-  const getFreeEpisodeCount = (totalEpisodes: number) => {
+  const getFreeEpisodeCount = (totalEpisodes: number, freeCountOverride?: number) => {
+    if (typeof freeCountOverride === 'number' && freeCountOverride >= 0) {
+      return freeCountOverride;
+    }
     if (totalEpisodes <= 1) return 1;
     return Math.max(1, Math.ceil(totalEpisodes * 0.3));
   };
 
-  // Check if an episode is inherently free under the 30% policy
-  const isEpisodeFree = (episodeNumber: number, totalEpisodes: number) => {
-    const freeCount = getFreeEpisodeCount(totalEpisodes);
+  // Check if an episode is inherently free under the policy (or drama override)
+  const isEpisodeFree = (episodeNumber: number, totalEpisodes: number, freeCountOverride?: number) => {
+    const freeCount = getFreeEpisodeCount(totalEpisodes, freeCountOverride);
     return episodeNumber <= freeCount;
   };
 
@@ -328,9 +337,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     dramaId: string,
     episodeId: string,
     episodeNumber: number,
-    totalEpisodes: number
+    totalEpisodes: number,
+    freeCountOverride?: number
   ) => {
-    if (isEpisodeFree(episodeNumber, totalEpisodes)) return true;
+    if (isEpisodeFree(episodeNumber, totalEpisodes, freeCountOverride)) return true;
     const unlockKey = `${dramaId}:${episodeId}`;
     return unlockedEpisodes.includes(unlockKey);
   };

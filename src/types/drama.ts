@@ -32,6 +32,7 @@ export interface Drama {
   poster: string;
   banner: string;
   totalEpisodes: number;
+  freeEpisodesCount?: number;
   isAyuOriginal?: boolean;
   isTrending?: boolean;
   isFeatured?: boolean;
